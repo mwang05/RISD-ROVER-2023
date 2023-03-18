@@ -4,7 +4,7 @@ using UnityEngine;
 using Microsoft.MixedReality.Toolkit.UX;
 
 
-public class MapControl : MonoBehaviour
+public class MapZoom : MonoBehaviour
 {
     [SerializeField] private RectTransform rt;
 
