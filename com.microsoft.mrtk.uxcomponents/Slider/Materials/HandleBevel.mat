@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: HandleBevel
   m_Shader: {fileID: 4800000, guid: 29b058829dc4dbf449bc59c038dfa631, type: 3}
-  m_ShaderKeywords: _DECAL_FRONT_ONLY__ON _REFLECTED__ON _SKY_ENABLED_
+  m_ShaderKeywords: _DECAL_FRONT_ONLY__ON _REFLECTED__ON _SKY_ENABLED_ _UI_CLIP_RECT_ROUNDED
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -75,6 +75,8 @@ Material:
     - _Line_Gradient_Blend_: 0
     - _Line_Width_: 1
     - _Mapped_Environment_Enabled_: 0
+    - _Occluded_Intensity_: 1
+    - _Orthographic_Distance_: 400
     - _Power_: 1
     - _Rate_: 0
     - _Reflected_: 1
@@ -82,6 +84,7 @@ Material:
     - _Sharpness_: 0
     - _Shininess_: 10
     - _Sky_Enabled_: 1
+    - _Smooth_Edges_: 0
     - _Specular_: 0
     - _SrcBlend: 1
     - _StencilComparison: 0
@@ -100,7 +103,7 @@ Material:
     - _Bottom_Left_: {r: 0.62352943, g: 0.63529414, b: 0.9882353, a: 1}
     - _Bottom_Right_: {r: 0.3647059, g: 0.35686275, b: 0.83137256, a: 1}
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 0}
-    - _ClipRectRadii: {r: 10, g: 10, b: 10, a: 0}
+    - _ClipRectRadii: {r: 10, g: 10, b: 10, a: 10}
     - _Decal_Scale_XY_: {r: 1.5, g: 1.5, b: 0, a: 0}
     - _Gradient_Color_: {r: 1, g: 1, b: 1, a: 1}
     - _Ground_Color_: {r: 0.603922, g: 0.611765, b: 0.764706, a: 1}

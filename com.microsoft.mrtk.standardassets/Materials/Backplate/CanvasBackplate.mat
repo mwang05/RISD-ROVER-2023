@@ -10,7 +10,7 @@ Material:
   m_Name: CanvasBackplate
   m_Shader: {fileID: 4800000, guid: 29b058829dc4dbf449bc59c038dfa631, type: 3}
   m_ShaderKeywords: _EDGE_ONLY_ _GRADIENT_DISABLED_ _IRIDESCENCE_ENABLE_ _LINE_ENABLE_
-    _REFLECTED__ON _SMOOTH_EDGES_
+    _REFLECTED__ON _SMOOTH_EDGES_ _UI_CLIP_RECT_ROUNDED
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -54,6 +54,7 @@ Material:
     - _Line_Gradient_Blend_: 0
     - _Line_Width_: 1
     - _Occluded_Intensity_: 1
+    - _Orthographic_Distance_: 400
     - _Rate_: 0
     - _Reflected_: 1
     - _Smooth_Edges_: 1
