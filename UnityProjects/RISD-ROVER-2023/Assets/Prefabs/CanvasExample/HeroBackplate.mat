@@ -153,6 +153,8 @@ Material:
     - _EnvironmentColorX: {r: 1, g: 0, b: 0, a: 1}
     - _EnvironmentColorY: {r: 0, g: 1, b: 0, a: 1}
     - _EnvironmentColorZ: {r: 0, g: 0, b: 1, a: 1}
+    - _GradientAlpha: {r: 1, g: 1, b: 1, a: 1}
+    - _GradientAlphaTime: {r: 0, g: 0, b: 0, a: 0}
     - _GradientColor0: {r: 0, g: 0, b: 0, a: 0}
     - _GradientColor1: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
     - _GradientColor2: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
