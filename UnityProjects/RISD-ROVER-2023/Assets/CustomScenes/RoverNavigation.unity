@@ -269,7 +269,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb8f595da4742af4bbb16a235030b610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _verticalLayoutGroup: {fileID: 42036357}
 --- !u!4 &73025389 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2351505567455720332, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
@@ -368,6 +367,38 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: m_HDR
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: m_ClearFlags
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: far clip plane
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: near clip plane
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.4745098
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.3019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566771328527, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.19215687
+      objectReference: {fileID: 0}
+    - target: {fileID: 2351505566903569412, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 2351505567455720332, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -693,6 +724,7 @@ GameObject:
   - component: {fileID: 1420886774}
   - component: {fileID: 1420886773}
   - component: {fileID: 1420886772}
+  - component: {fileID: 1420886775}
   m_Layer: 5
   m_Name: Map Canvas
   m_TagString: Untagged
@@ -782,6 +814,19 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &1420886775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1420886770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f88465309d3c06142ac24530ac79bbab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  distanceFromUser: 0.48
 --- !u!114 &1497015768 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5569439093497552269, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
@@ -920,6 +965,20 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!1 &1635482491 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2351505566771328562, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
+  m_PrefabInstance: {fileID: 525252187}
+  m_PrefabAsset: {fileID: 0}
+--- !u!45 &1635482492
+Skybox:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1635482491}
+  m_Enabled: 1
+  m_CustomSkybox: {fileID: 2100000, guid: 71f14a2d79f732f4d9893ef1b911f4ff, type: 2}
 --- !u!1001 &1789277895
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1465,7 +1524,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 400, y: 300, z: 15}
+  m_Size: {x: 400, y: 300, z: 30}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4205951706117969551
 MonoBehaviour:
