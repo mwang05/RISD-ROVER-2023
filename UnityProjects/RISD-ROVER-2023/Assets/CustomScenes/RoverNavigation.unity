@@ -269,7 +269,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb8f595da4742af4bbb16a235030b610, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _verticalLayoutGroup: {fileID: 42036357}
 --- !u!4 &73025389 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2351505567455720332, guid: 4d7e2f87fefe0ba468719b15288b46e7, type: 3}
@@ -1525,7 +1524,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 400, y: 300, z: 15}
+  m_Size: {x: 400, y: 300, z: 30}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4205951706117969551
 MonoBehaviour:
