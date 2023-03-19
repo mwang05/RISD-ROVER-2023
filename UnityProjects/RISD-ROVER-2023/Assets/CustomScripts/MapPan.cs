@@ -9,8 +9,8 @@ namespace Microsoft.MixedReality.Toolkit
 {
     public class MapPan : MRTKBaseInteractable
     {
-        [SerializeField] private RectTransform mapRT;
-        [SerializeField] private BoxCollider meshBC;
+        private RectTransform _mapRT;
+        private BoxCollider _meshBC;
         private Dictionary<IXRInteractor, Vector2> lastPositions = new Dictionary<IXRInteractor, Vector2>();
         private Vector2 firstPosition = new Vector2();
         private Vector2 initialOffsetMin = new Vector2();
@@ -19,6 +19,8 @@ namespace Microsoft.MixedReality.Toolkit
         // Start is called before the first frame update
         void Start()
         {
+            _mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
+            _meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
         }
 
         public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase) 
@@ -37,14 +39,14 @@ namespace Microsoft.MixedReality.Toolkit
                         {
                             firstPosition = localTouchPosition;
                             lastPosition = localTouchPosition;
-                            initialOffsetMin = mapRT.offsetMin;
-                            initialOffsetMax = mapRT.offsetMax;
+                            initialOffsetMin = _mapRT.offsetMin;
+                            initialOffsetMax = _mapRT.offsetMax;
                         }
 
                         // Update the offsets (top, right, bottom, left) based on the change in position
                         Vector2 delta = localTouchPosition - firstPosition;
-                        mapRT.offsetMin = new Vector2(initialOffsetMin.x + delta.x, initialOffsetMin.y + delta.y);
-                        mapRT.offsetMax = mapRT.offsetMin;                  
+                        _mapRT.offsetMin = new Vector2(initialOffsetMin.x + delta.x, initialOffsetMin.y + delta.y);
+                        _mapRT.offsetMax = _mapRT.offsetMin;                  
 
                         // Write/update the last-position
                         if (lastPositions.ContainsKey(interactor))

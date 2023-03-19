@@ -10,7 +10,7 @@ public class MapZoom : MonoBehaviour
 
     public void ScaleMapWithSlider(SliderEventData args) 
     {
-        float scale = 1 + args.NewValue;
+        float scale = 1 + args.NewValue * 2;
         rt.localScale = new Vector3(scale, scale, 1);
     }
 }
