@@ -7,11 +7,17 @@ public class MapFollow : MonoBehaviour
 {
     [SerializeField] private float distanceFromUser;
     private RectTransform _canvasRT;
+    private RectTransform _canvasRT_Menu;
+    private RectTransform _canvasRT_PosBtn;
 
     // Start is called before the first frame update
     void Start()
     {
         _canvasRT = GameObject.Find("Map Canvas").GetComponent<RectTransform>();
+        // Menu Canvas
+        // _canvasRT_Menu = GameObject.Find("Menu Canvas").GetComponent<RectTransform>();
+        // Pos Btn Canvas
+        // _canvasRT_PosBtn = GameObject.Find("Pos Btn Canvas").GetComponent<RectTransform>();
     }
 
     // Update is called once per frame
@@ -26,5 +32,17 @@ public class MapFollow : MonoBehaviour
 
         _canvasRT.transform.position = userPos + distanceFromUser * userLook;
         _canvasRT.transform.rotation = Camera.main.transform.rotation;
+        /*
+        if(_canvasRT_Menu != null)
+        {
+            _canvasRT_Menu.transform.position = userPos + distanceFromUser * userLook;
+            _canvasRT_Menu.transform.rotation = Camera.main.transform.rotation;
+        }
+        if(_canvasRT_PosBtn != null)
+        {
+            _canvasRT_PosBtn.transform.position = userPos + distanceFromUser * userLook;
+            _canvasRT_PosBtn.transform.rotation = Camera.main.transform.rotation;
+        }
+        */
     }
 }
