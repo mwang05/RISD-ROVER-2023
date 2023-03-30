@@ -21,15 +21,15 @@ public class MarkerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float scale = 100.0f * _mapRT.localScale.x;
+        float scaleW2M = 100.0f * _mapRT.localScale.x;
 
         foreach(var item in markers)
         {
-            GameObject marker = item.Item1;
-            Vector3 pos = item.Item2;
+            // GameObject marker = item.Item1;
+            Vector3 pos = item.Item2;    // mark pos in world space
             RectTransform rt = item.Item3;
 
-            rt.offsetMin = new Vector2(scale * pos.x + _mapRT.offsetMin.x, scale * pos.z + _mapRT.offsetMin.y);
+            rt.offsetMin = _mapRT.offsetMin + new Vector2(pos.x, pos.z) * scaleW2M;
             rt.offsetMax = rt.offsetMin;
         }
     }
