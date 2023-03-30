@@ -20,7 +20,7 @@ public class MapFollow : MonoBehaviour
         Vector3 userPos = Camera.main.transform.position;
         Vector3 userLook = Camera.main.transform.forward;
 
-        userLook.y = 0;
+        userLook.y = 0.0f;
         userLook = Vector3.Normalize(userLook);
 
         _canvasRT.transform.position = userPos + distanceFromUser * userLook;

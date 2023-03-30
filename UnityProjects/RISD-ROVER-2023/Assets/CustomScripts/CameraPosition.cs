@@ -9,6 +9,7 @@ public class CameraPosition : MonoBehaviour
     // private VerticalLayoutGroup _verticalLayoutGroup;
     private RectTransform _mapRT;
     private RectTransform _curlocRT;
+    public float lookAngleWithFront;  // dot product <look, vec3.front>
 
     void Start()
     {
@@ -30,9 +31,12 @@ public class CameraPosition : MonoBehaviour
 
         // Rotate curLoc icon
         userLook.y = 0;
-        float angle = Vector3.Angle(Vector3.forward, userLook);
-        angle = userLook.x > 0 ? -angle : angle;
-        _curlocRT.localRotation = Quaternion.Euler(0, 0, angle);
+        lookAngleWithFront = Vector3.Angle(Vector3.forward, userLook) * -Mathf.Sign(userLook.x);
+        Debug.Log(lookAngleWithFront);
+
+        // float angle = userLook.x > 0 ? -lookAngleWithFront : lookAngleWithFront;
+        // _curlocRT.localRotation = Quaternion.Euler(0, 0, angle);
+        _curlocRT.localRotation = Quaternion.Euler(0, 0, lookAngleWithFront);
     }
 
 }
