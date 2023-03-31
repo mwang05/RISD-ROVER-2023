@@ -8,8 +8,7 @@ public class MapFollow : MonoBehaviour
     [SerializeField] private float distanceFromUser;
     private RectTransform _canvasRT;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         _canvasRT = GameObject.Find("Map Canvas").GetComponent<RectTransform>();
     }
