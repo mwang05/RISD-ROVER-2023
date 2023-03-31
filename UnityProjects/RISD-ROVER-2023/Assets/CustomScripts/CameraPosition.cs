@@ -23,7 +23,7 @@ public class CameraPosition : MonoBehaviour
         Vector3 userPos = Camera.main.transform.position;
         Vector3 userLook = Camera.main.transform.forward;
 
-        Debug.Log(userLook);
+        // Debug.Log(userLook);
 
         float mapRotZDeg = _mapRT.localEulerAngles.z;
 
