@@ -22,6 +22,7 @@ public class MarkerController : MonoBehaviour
     void Update()
     {
         float scaleW2M = 100.0f * _mapRT.localScale.x;
+        float mapRotZDeg = _mapRT.localEulerAngles.z;
 
         foreach(var item in markers)
         {
@@ -29,7 +30,16 @@ public class MarkerController : MonoBehaviour
             Vector3 pos = item.Item2;    // mark pos in world space
             RectTransform rt = item.Item3;
 
-            rt.offsetMin = _mapRT.offsetMin + new Vector2(pos.x, pos.z) * scaleW2M;
+            // Translate (offset) markers relative to map RT
+            // Note: pos gives offsets in rotated MAP SPACE,
+            //       but we must compute offsets in PANEL SPACE
+
+            // Marker pos in map space, with rotation of map (xz components)
+            Vector3 posMapspace = pos * scaleW2M;
+            // Rotate posMapspace back to get coords in unrotated map coords (xz components)
+            Vector3 posMapspaceUnrot = Quaternion.Euler(0.0f, -mapRotZDeg, 0.0f) * posMapspace;
+
+            rt.offsetMin = _mapRT.offsetMin + new Vector2(posMapspaceUnrot.x, posMapspaceUnrot.z);
             rt.offsetMax = rt.offsetMin;
         }
     }

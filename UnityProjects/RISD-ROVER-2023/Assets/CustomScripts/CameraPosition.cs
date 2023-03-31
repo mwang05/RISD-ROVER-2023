@@ -6,7 +6,6 @@ using Microsoft.MixedReality.Toolkit.UX;
 
 public class CameraPosition : MonoBehaviour
 {
-    // private VerticalLayoutGroup _verticalLayoutGroup;
     private RectTransform _mapRT;
     private RectTransform _curlocRT;
 
@@ -20,12 +19,9 @@ public class CameraPosition : MonoBehaviour
     void Update()
     {
         float scaleW2M = 100.0f * _mapRT.localScale.x;
+        float mapRotZDeg = _mapRT.localEulerAngles.z;
         Vector3 userPos = Camera.main.transform.position;
         Vector3 userLook = Camera.main.transform.forward;
-
-        // Debug.Log(userLook);
-
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
 
         // Rotate curLoc icon
         userLook.y = 0.0f;

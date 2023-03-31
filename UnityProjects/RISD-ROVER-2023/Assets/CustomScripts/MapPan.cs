@@ -30,6 +30,7 @@ namespace Microsoft.MixedReality.Toolkit
                 {
                     if (interactor is Input.PokeInteractor)
                     {
+						Debug.Log("MapPan::ProcessInteractable");
                         // attachTransform will be the actual point of the touch interaction (e.g. index tip)
                         Vector2 localTouchPosition = transform.InverseTransformPoint(interactor.GetAttachTransform(this).position);
 
