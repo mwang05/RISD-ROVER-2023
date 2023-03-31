@@ -114,8 +114,6 @@ MonoBehaviour:
       value: 62489
     - key: Icon 88
       value: 62476
-    - key: Icon 87
-      value: 62450
     - key: Icon 86
       value: 62433
     - key: Icon 85
@@ -297,6 +295,6 @@ MonoBehaviour:
     - key: Icon 141
       value: 63703
     - key: Icon 142
-      value: 63742
+      value: 95
   iconFontAsset: {fileID: 11400000, guid: 9b0d0ee11ff70b04d901a29b519cbaa0, type: 2}
   optionalEditorMaterial: {fileID: 0}
