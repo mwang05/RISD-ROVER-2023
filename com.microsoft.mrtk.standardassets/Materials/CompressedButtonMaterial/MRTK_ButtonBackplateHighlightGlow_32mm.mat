@@ -21,9 +21,9 @@ Material:
     m_TexEnvs: []
     m_Floats:
     - _Absolute_Sizes_: 1
-    - _Bevel_Radius_: 0.013
+    - _Bevel_Radius_: 0
     - _Bias_: 0.5
-    - _Blend_Exponent_: 1.5
+    - _Blend_Exponent_: 0
     - _Exponent_: 2
     - _Exponent_2_: 2
     - _Fade_Start_: 0
