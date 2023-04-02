@@ -102,6 +102,7 @@ namespace Microsoft.MixedReality.Toolkit
         /************* Scale ***************/
         public void MapScaleCallback(SliderEventData args)
         {
+            if (_mapRT == null) return;
             float scale = 1.0f + args.NewValue * _maxZoom;
             _mapRT.localScale = new Vector3(scale, scale, 1.0f);
         }
