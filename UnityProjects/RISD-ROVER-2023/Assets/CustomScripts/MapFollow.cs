@@ -6,23 +6,26 @@ using Microsoft.MixedReality.Toolkit.UX;
 public class MapFollow : MonoBehaviour
 {
     [SerializeField] private float distanceFromUser;
-    private RectTransform _canvasRT;
+    private Transform _canvasTf;
+    private Camera _mainCamera;
 
     void Awake()
     {
-        _canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
+        _canvasTf = GameObject.Find("Canvas").GetComponent<RectTransform>().transform;
+        _mainCamera = Camera.main;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 userPos = Camera.main.transform.position;
-        Vector3 userLook = Camera.main.transform.forward;
+        Transform cameraTf = _mainCamera.transform;
+        Vector3 userPos = cameraTf.position;
+        Vector3 userLook = cameraTf.forward;
 
-        userLook.y = 0.0f;
+        userLook.y = -0.75f;
         userLook = Vector3.Normalize(userLook);
 
-        _canvasRT.transform.position = userPos + distanceFromUser * userLook;
-        _canvasRT.transform.rotation = Camera.main.transform.rotation;
+        _canvasTf.position = userPos + distanceFromUser * userLook;
+        _canvasTf.rotation = cameraTf.rotation;
     }
 }
