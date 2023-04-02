@@ -38,6 +38,13 @@ namespace Microsoft.MixedReality.Toolkit
         private float _mapLastRotZDeg = 0.0f;
 
         // Marker
+        enum MarkerType
+        {
+            Waypoint,
+            Obstacle,
+            Marker,
+            Rover
+        };
         private Vector2 lastTouchPosition;
         private bool _editMarkerMode = false;
         [SerializeField] private GameObject markerPrefab;
@@ -50,6 +57,8 @@ namespace Microsoft.MixedReality.Toolkit
         private float _panelXBound, _panelYBound;
         private GameObject _markersObj;
         private float _buttonPressedTime;
+        private MarkerType _selectedMarkerType;
+        private FontIconSelector _waypointIcon, _obstacleIcon, _markerIcon, _roverIcon;
 
         void Start()
         {
@@ -63,6 +72,10 @@ namespace Microsoft.MixedReality.Toolkit
             var panelSize = GameObject.Find("Map Panel").GetComponent<BoxCollider>().size;
             _panelXBound = panelSize.x / 2;
             _panelYBound = panelSize.y / 2;
+            _waypointIcon = GameObject.Find("WaypointIcon").GetComponent<FontIconSelector>();
+            _obstacleIcon = GameObject.Find("ObstacleIcon").GetComponent<FontIconSelector>();
+            _markerIcon = GameObject.Find("MarkerIcon").GetComponent<FontIconSelector>();
+            _roverIcon = GameObject.Find("RoverIcon").GetComponent<FontIconSelector>();
         }
 
         void Update()
@@ -280,8 +293,24 @@ namespace Microsoft.MixedReality.Toolkit
         }
 
         /************* Marker **************/
-        public void OnMarkerButtonSelectEnter()
+        public void OnWaypointSelectEnter()
         {
+            _selectedMarkerType = MarkerType.Waypoint;
+            _buttonPressedTime = Time.time;
+        }
+        public void OnObstacleSelectEnter()
+        {
+            _selectedMarkerType = MarkerType.Obstacle;
+            _buttonPressedTime = Time.time;
+        }
+        public void OnMarkerSelectEnter()
+        {
+            _selectedMarkerType = MarkerType.Marker;
+            _buttonPressedTime = Time.time;
+        }
+        public void OnRoverSelectEnter()
+        {
+            _selectedMarkerType = MarkerType.Rover;
             _buttonPressedTime = Time.time;
         }
 
@@ -293,7 +322,26 @@ namespace Microsoft.MixedReality.Toolkit
                 _editMarkerMode = true;
             }
             else
-            { ;
+            {
+                switch (_selectedMarkerType)
+                {
+                    case MarkerType.Waypoint:
+                        _waypointIcon.CurrentIconName =
+                            _waypointIcon.CurrentIconName == "Icon 30" ? "Icon 10" : "Icon 30";
+                        break;
+                    case MarkerType.Obstacle:
+                        _obstacleIcon.CurrentIconName =
+                            _obstacleIcon.CurrentIconName == "Icon 15" ? "Icon 10" : "Icon 15";
+                        break;
+                    case MarkerType.Marker:
+                        _markerIcon.CurrentIconName =
+                            _markerIcon.CurrentIconName == "Icon 14" ? "Icon 10" : "Icon 14";
+                        break;
+                    case MarkerType.Rover:
+                        _roverIcon.CurrentIconName =
+                            _roverIcon.CurrentIconName == "Icon 54" ? "Icon 10" : "Icon 54";
+                        break;
+                }
                 _markersObj.SetActive(!_markersObj.activeSelf);
             }
         }
