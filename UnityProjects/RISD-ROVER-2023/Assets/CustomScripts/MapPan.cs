@@ -16,21 +16,21 @@ namespace Microsoft.MixedReality.Toolkit
         private Vector2 initialOffsetMin = new Vector2();
         private Vector2 initialOffsetMax = new Vector2();
 
-        // Start is called before the first frame update
         void Start()
         {
             _mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
             _meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
         }
 
-        public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase) 
+        public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
         {
             if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
             {
                 foreach (var interactor in interactorsSelecting)
                 {
-                    if (interactor is Input.PokeInteractor) 
+                    if (interactor is Input.PokeInteractor)
                     {
+						Debug.Log("MapPan::ProcessInteractable");
                         // attachTransform will be the actual point of the touch interaction (e.g. index tip)
                         Vector2 localTouchPosition = transform.InverseTransformPoint(interactor.GetAttachTransform(this).position);
 
@@ -45,8 +45,8 @@ namespace Microsoft.MixedReality.Toolkit
 
                         // Update the offsets (top, right, bottom, left) based on the change in position
                         Vector2 delta = localTouchPosition - firstPosition;
-                        _mapRT.offsetMin = new Vector2(initialOffsetMin.x + delta.x, initialOffsetMin.y + delta.y);
-                        _mapRT.offsetMax = _mapRT.offsetMin;                  
+                        _mapRT.offsetMin = initialOffsetMin + delta;
+                        _mapRT.offsetMax = _mapRT.offsetMin;
 
                         // Write/update the last-position
                         if (lastPositions.ContainsKey(interactor))
