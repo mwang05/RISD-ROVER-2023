@@ -7,16 +7,22 @@ public class MarkerController : MonoBehaviour
     [SerializeField] private GameObject markerPrefab;
     [SerializeField] private GameObject compassMarkerPrefab;
 
-    private List<(Vector3, RectTransform, RectTransform)> markers;
+    private List<(Vector3, RectTransform, RectTransform)> _markers;
     private RectTransform _mapRT;
+    private RectTransform _compassRT, _compassMarkersRT;
     // private RectTransform _curlocRT;
+    // private GameObject _compassObj, _compassImgObj;
 
     // Start is called before the first frame update
     void Start()
     {
         // Each marker is a (worldPos, mapRT, compassRT) triple
-        markers = new List<(Vector3, RectTransform, RectTransform)>();
+        _markers = new List<(Vector3, RectTransform, RectTransform)>();
         _mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
+        // _compassObj = GameObject.Find("Compass");
+        // _compassImgObj = GameObject.Find("Compass");
+        _compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
+        _compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
         // _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
     }
 
@@ -25,10 +31,14 @@ public class MarkerController : MonoBehaviour
     {
         float scaleW2M = 100.0f * _mapRT.localScale.x;
         float mapRotZDeg = _mapRT.localEulerAngles.z;
+        float compassWidth = _compassRT.rect.width / 360.0f;
 
-        foreach(var item in markers)
+        Vector3 userPos = Camera.main.transform.position;
+        Vector3 userLook = Camera.main.transform.forward;
+        userLook.y = 0.0f;
+
+        foreach(var item in _markers)
         {
-            // GameObject marker = item.Item1;
             Vector3 posWorldspace = item.Item1;    // mark pos in world space
             RectTransform rtMap = item.Item2;
             RectTransform rtCompass = item.Item3;
@@ -45,20 +55,25 @@ public class MarkerController : MonoBehaviour
             rtMap.offsetMin = _mapRT.offsetMin + new Vector2(posMapspaceUnrot.x, posMapspaceUnrot.z);
             rtMap.offsetMax = rtMap.offsetMin;
 
-
             // Adjust marker position on compass
-
+            // 1. Get relative angle of marker from front in range -180 ~ 180
+            Vector3 markerDir = posWorldspace - userPos;
+            markerDir.y = 0.0f;
+            float angleToMarker = Vector3.SignedAngle(markerDir, userLook, Vector3.up);
+            rtCompass.offsetMin = new Vector2(angleToMarker * compassWidth, 0.0f);
+            rtCompass.offsetMax = rtCompass.offsetMin;
         }
     }
 
     public void AddMarker()
     {
         GameObject markerOnMap = Instantiate(markerPrefab, transform);
-        // GameObject markerOnCompass = Instantiate(compassMarkerPrefab, transform);
-        markers.Add((Camera.main.transform.position,
+        GameObject markerOnCompass = Instantiate(compassMarkerPrefab, _compassMarkersRT);
+        Debug.Log(_compassMarkersRT);
+        _markers.Add((Camera.main.transform.position,
                      markerOnMap.GetComponent<RectTransform>(),
-                     null));
-                     // markerOnCompass.GetComponent<RectTransform>()));
+                     // null));
+                     markerOnCompass.GetComponent<RectTransform>()));
                      // markerOnMap.GetComponent<RectTransform>()));
     }
 }
