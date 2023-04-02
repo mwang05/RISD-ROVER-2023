@@ -11,7 +11,7 @@ public class MapFollow : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _canvasRT = GameObject.Find("Map Canvas").GetComponent<RectTransform>();
+        _canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
     }
 
     // Update is called once per frame
