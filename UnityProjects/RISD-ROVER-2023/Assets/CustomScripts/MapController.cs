@@ -4,7 +4,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UX;
 using Microsoft.MixedReality.Toolkit;
-using System;
 using UnityEngine.UI;
 using RectTransform = UnityEngine.RectTransform;
 
@@ -43,8 +42,14 @@ public class MapController : MRTKBaseInteractable
         Marker,
         Rover
     };
+    enum MapActionMode
+    {
+        Pan,
+        AddMarker,
+        SelectMarker,
+        EditMarker
+    }
     private Vector2 lastTouchPosition;
-    private bool _editMarkerMode = false;
     [SerializeField] private GameObject markerPrefab;
     [SerializeField] private GameObject compassMarkerPrefab;
     [SerializeField] private float markerEditSensitivity = 0.033f;
@@ -57,6 +62,13 @@ public class MapController : MRTKBaseInteractable
     private float _buttonPressedTime;
     private MarkerType _selectedMarkerType;
     private FontIconSelector _waypointIcon, _obstacleIcon, _markerIcon, _roverIcon;
+    private GameObject _actionButtons;
+    private RectTransform _actionButtonsRT;
+    private MapActionMode _actionMode;
+    private bool _navigationOn = false;
+    private GameObject _navigateTo;
+    // private LineRenderer _lineRenderer;
+    // private GameObject _curloc;
 
     void Start()
     {
@@ -75,6 +87,12 @@ public class MapController : MRTKBaseInteractable
         _obstacleIcon = GameObject.Find("ObstacleIcon").GetComponent<FontIconSelector>();
         _markerIcon = GameObject.Find("MarkerIcon").GetComponent<FontIconSelector>();
         _roverIcon = GameObject.Find("RoverIcon").GetComponent<FontIconSelector>();
+        _actionButtons = GameObject.Find("Marker Action Buttons");
+        _actionButtonsRT = _actionButtons.GetComponent<RectTransform>();
+        _actionButtons.SetActive(false);
+        _actionMode = MapActionMode.Pan;
+        // _lineRenderer = GetComponent<LineRenderer>();
+        // _curloc = GameObject.Find("Curloc");
     }
 
     void Update()
@@ -115,7 +133,7 @@ public class MapController : MRTKBaseInteractable
                         _focusMode = MapFocusMode.MapNoFocus;
 
                         // Marker
-                        if (_editMarkerMode)
+                        if (_actionMode == MapActionMode.AddMarker)
                         {
                             _newMarkerOnMap = Instantiate(markerPrefab, _markersTF);
                             _newMarkerOnCompass = Instantiate(compassMarkerPrefab, _compassMarkersRT);
@@ -128,8 +146,9 @@ public class MapController : MRTKBaseInteractable
                                     _newMarkerOnMap.GetComponent<RectTransform>(),
                                     _newMarkerOnCompass.GetComponent<RectTransform>()
                                     ));
+                            _actionMode = MapActionMode.EditMarker;
                         }
-                        else
+                        else if (_actionMode != MapActionMode.EditMarker)
                         {
                             float minDist = markerEditSensitivity + 1;
                             foreach (var kvp in _markers)
@@ -145,9 +164,8 @@ public class MapController : MRTKBaseInteractable
 
                             if (minDist < markerEditSensitivity)
                             {
-                                _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                                _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                                _editMarkerMode = true;
+                                _actionButtons.SetActive(true);
+                                _actionMode = MapActionMode.SelectMarker;
                             }
                         }
                     }
@@ -155,17 +173,31 @@ public class MapController : MRTKBaseInteractable
                     // Update the offsets (top, right, bottom, left) based on the change in position
                     Vector2 delta = localTouchPosition - firstPosition;
 
-                    if (_editMarkerMode)
+                    switch (_actionMode)
                     {
-                        var markerItem = _markers[_newMarkerOnMap];
-                        markerItem.Item1 = MapToWorldPos(localTouchPosition);
-                        _markers[_newMarkerOnMap] = markerItem;
+                        case MapActionMode.Pan:
+                            _mapRT.offsetMin = initialOffsetMin + delta;
+                            _mapRT.offsetMax = _mapRT.offsetMin;
+                            break;
+                        case MapActionMode.EditMarker:
+                            var markerItem = _markers[_newMarkerOnMap];
+                            markerItem.Item1 = MapToWorldPos(localTouchPosition);
+                            _markers[_newMarkerOnMap] = markerItem;
+                            break;
+                        case MapActionMode.SelectMarker:
+                            var newPos = _newMarkerOnMap.transform.position;
+                            newPos.z -= 0.02f;
+                            newPos.y -= 0.033f;
+                            _actionButtons.transform.position = newPos;
+                            break;
                     }
-                    else
-                    {
-                        _mapRT.offsetMin = initialOffsetMin + delta;
-                        _mapRT.offsetMax = _mapRT.offsetMin;
-                    }
+
+                    // if (_navigationOn)
+                    // {
+                    //     Debug.Log("Navigate");
+                    //     _lineRenderer.SetPosition(0, _curloc.transform.position);
+                    //     _lineRenderer.SetPosition(1, _navigateTo.transform.position);
+                    // }
 
                     // Write/update the last-position
                     if (lastPositions.ContainsKey(interactor))
@@ -250,7 +282,6 @@ public class MapController : MRTKBaseInteractable
     {
         int newMode = ((int)_focusMode + 1) % (int)MapFocusMode.NumMapFocusModes;
         _focusMode = (MapFocusMode)newMode;
-        Debug.Log(_focusMode);
     }
 
     private void MapStoreLastRotation()
@@ -268,30 +299,24 @@ public class MapController : MRTKBaseInteractable
     {
         base.OnSelectEntered(args);
 
-        // Do something here (?)
+        if (_actionButtons.activeSelf)
+        {
+            _actionButtons.SetActive(false);
+            _actionMode = MapActionMode.Pan;
+            _newMarkerOnMap = null;
+            _newMarkerOnCompass = null;
+        }
     }
 
     protected override void OnSelectExited(SelectExitEventArgs args)
     {
         base.OnSelectExited(args);
 
-        if (_editMarkerMode)
+        if (_actionMode == MapActionMode.EditMarker)
         {
-            // Discard marker if being "thrown out" of the map
-            if (Math.Abs(lastTouchPosition.x) > _panelXBound ||
-                Math.Abs(lastTouchPosition.y) > _panelYBound)
-            {
-                _markers.Remove(_newMarkerOnMap);
-                Destroy(_newMarkerOnMap);
-                Destroy(_newMarkerOnCompass);
-            }
-            else
-            {
-                _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
-                _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
-            }
-
-            _editMarkerMode = false;
+            _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
+            _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
+            _actionMode = MapActionMode.Pan;
         }
 
         // Remove the interactor from our last-position collection when it leaves.
@@ -320,12 +345,36 @@ public class MapController : MRTKBaseInteractable
         _buttonPressedTime = Time.time;
     }
 
+    public void OnMarkerMovePressed()
+    {
+        _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+        _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+        _actionMode = MapActionMode.EditMarker;
+        _actionButtons.SetActive(false);
+    }
+
+    public void OnMarkerDeletePressed()
+    {
+        _markers.Remove(_newMarkerOnMap);
+        Destroy(_newMarkerOnMap);
+        Destroy(_newMarkerOnCompass);
+        _actionMode = MapActionMode.Pan;
+        _actionButtons.SetActive(false);
+    }
+
+    // public void OnMarkerNavigatePressed()
+    // {
+    //     _navigationOn = !_navigationOn;
+    //     _navigateTo = _navigationOn ? _newMarkerOnMap : null;
+    //     _lineRenderer.positionCount = _navigationOn ? 2 : 0;
+    // }
+
     public void OnMarkerButtonSelectExit()
     {
         float delta = Time.time - _buttonPressedTime;
-        if (delta > 1f)
+        if (delta > 0.7f)
         {
-            _editMarkerMode = true;
+            _actionMode = MapActionMode.AddMarker;
         }
         else
         {
