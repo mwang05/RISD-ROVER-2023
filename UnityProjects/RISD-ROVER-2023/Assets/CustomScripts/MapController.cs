@@ -467,9 +467,9 @@ public class MapController : MRTKBaseInteractable
     // For simulation in Unity
     private Vector2 getGPSCoords()
     {
-        Vector3 worldPos = Camera.main.transform.position;
+        Vector3 worldPos = _mainCamera.transform.position;
         Vector2 gpsCoords = new Vector2(satCenterLatitude, satCenterLongitude);
-        gpsCoords += 0.01f * new Vector2(worldPos.z, worldPos.x);
+        gpsCoords += 0.001f * new Vector2(worldPos.z, worldPos.x);
         return gpsCoords;
     }
 
