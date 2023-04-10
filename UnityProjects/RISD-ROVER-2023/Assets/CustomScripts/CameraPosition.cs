@@ -59,7 +59,7 @@ public class CameraPosition : MonoBehaviour
     {
         Vector3 worldPos = Camera.main.transform.position;
         Vector2 gpsCoords = new Vector2(satCenterLatitude, satCenterLongitude);
-        gpsCoords += 0.001f * new Vector2(worldPos.z, worldPos.x);
+        gpsCoords += 5e-5f * new Vector2(worldPos.z, worldPos.x);
         return gpsCoords;
     }
 
