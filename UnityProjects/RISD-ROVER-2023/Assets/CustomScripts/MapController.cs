@@ -4,7 +4,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UX;
 using Microsoft.MixedReality.Toolkit;
-using System;
 using UnityEngine.UI;
 using RectTransform = UnityEngine.RectTransform;
 
@@ -18,9 +17,18 @@ public class MapController : MRTKBaseInteractable
         NumMapFocusModes,
     };
 
-    private RectTransform _mapRT;
+    private RectTransform _mapRT, _canvasRT;
     private BoxCollider _meshBC;
     private Camera _mainCamera;
+
+    // Satellite info
+    // hard coded center
+    private const float satCenterLatitude  = 29.564575f;   // latitude at the center of the satellite image, in degree
+    private const float satCenterLongitude = -95.081164f;  // longitude at the center of the satellite image, in degree
+    // hard coded scale
+    private const float satLatitudeRange = 0.002216f;  // the satellite image covers this much latitudes in degree
+    private const float satLongitudeRange = 0.00255f;  // the satellite image covers this much longitudes in degree
+
 
     // Zoom
     [SerializeField] private float _maxZoom = 2.0f;
@@ -43,12 +51,25 @@ public class MapController : MRTKBaseInteractable
         Marker,
         Rover
     };
-    private Vector2 lastTouchPosition;
+    private Vector2 _lastTouchPosition;
     private bool _editMarkerMode = false;
+
+    enum MapActionMode
+    {
+        Pan,
+        AddMarker,
+        SelectMarker,
+        EditMarker
+    }
+    private Vector2 lastTouchPosition;
+
     [SerializeField] private GameObject markerPrefab;
     [SerializeField] private GameObject compassMarkerPrefab;
     [SerializeField] private float markerEditSensitivity = 0.033f;
-    private Dictionary<GameObject, (Vector3, GameObject, GameObject, RectTransform, RectTransform)> _markers;
+
+    // Each marker is a (gpsCoords, mapMarkerObj, compassMarkerObj, mapRT, compassRT) 5-tuple
+    private Dictionary<GameObject, (Vector2, GameObject, GameObject, RectTransform, RectTransform)> _markers;
+
     private RectTransform _compassRT, _compassMarkersRT;
     private GameObject _newMarkerOnMap, _newMarkerOnCompass;
     private Transform _markersTF;
@@ -57,13 +78,21 @@ public class MapController : MRTKBaseInteractable
     private float _buttonPressedTime;
     private MarkerType _selectedMarkerType;
     private FontIconSelector _waypointIcon, _obstacleIcon, _markerIcon, _roverIcon;
+    private GameObject _actionButtons;
+    private RectTransform _actionButtonsRT;
+    private MapActionMode _actionMode;
+    private bool _navigationOn = false;
+    private GameObject _navigateTo;
+    // private LineRenderer _lineRenderer;
+    // private GameObject _curloc;
 
     void Start()
     {
         _mainCamera = Camera.main;
         _mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
+        _canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
         _meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
-        _markers = new Dictionary<GameObject, (Vector3, GameObject, GameObject, RectTransform, RectTransform)>();
+        _markers = new Dictionary<GameObject, (Vector2, GameObject, GameObject, RectTransform, RectTransform)>();
         _compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
         _compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
         _markersObj = GameObject.Find("Markers");
@@ -75,6 +104,12 @@ public class MapController : MRTKBaseInteractable
         _obstacleIcon = GameObject.Find("ObstacleIcon").GetComponent<FontIconSelector>();
         _markerIcon = GameObject.Find("MarkerIcon").GetComponent<FontIconSelector>();
         _roverIcon = GameObject.Find("RoverIcon").GetComponent<FontIconSelector>();
+        _actionButtons = GameObject.Find("Marker Action Buttons");
+        _actionButtonsRT = _actionButtons.GetComponent<RectTransform>();
+        _actionButtons.SetActive(false);
+        _actionMode = MapActionMode.Pan;
+        // _lineRenderer = GetComponent<LineRenderer>();
+        // _curloc = GameObject.Find("Curloc");
     }
 
     void Update()
@@ -115,26 +150,28 @@ public class MapController : MRTKBaseInteractable
                         _focusMode = MapFocusMode.MapNoFocus;
 
                         // Marker
-                        if (_editMarkerMode)
+                        if (_actionMode == MapActionMode.AddMarker)
                         {
                             _newMarkerOnMap = Instantiate(markerPrefab, _markersTF);
                             _newMarkerOnCompass = Instantiate(compassMarkerPrefab, _compassMarkersRT);
                             _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
                             _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
                             _markers.Add(_newMarkerOnMap,
-                                (MapToWorldPos(firstPosition),
+								(MapPosToGPS(firstPosition),
+                                //(MapToWorldPos(firstPosition),
                                     _newMarkerOnMap,
                                     _newMarkerOnCompass,
                                     _newMarkerOnMap.GetComponent<RectTransform>(),
                                     _newMarkerOnCompass.GetComponent<RectTransform>()
                                     ));
+                            _actionMode = MapActionMode.EditMarker;
                         }
-                        else
+                        else if (_actionMode != MapActionMode.EditMarker)
                         {
                             float minDist = markerEditSensitivity + 1;
                             foreach (var kvp in _markers)
                             {
-                                float dist = (kvp.Value.Item1 - MapToWorldPos(firstPosition)).magnitude;
+                                float dist = (kvp.Value.Item1 - MapPosToGPS(firstPosition)).magnitude;
                                 if (dist < minDist)
                                 {
                                     minDist = dist;
@@ -145,9 +182,8 @@ public class MapController : MRTKBaseInteractable
 
                             if (minDist < markerEditSensitivity)
                             {
-                                _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                                _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                                _editMarkerMode = true;
+                                _actionButtons.SetActive(true);
+                                _actionMode = MapActionMode.SelectMarker;
                             }
                         }
                     }
@@ -155,17 +191,31 @@ public class MapController : MRTKBaseInteractable
                     // Update the offsets (top, right, bottom, left) based on the change in position
                     Vector2 delta = localTouchPosition - firstPosition;
 
-                    if (_editMarkerMode)
+                    switch (_actionMode)
                     {
-                        var markerItem = _markers[_newMarkerOnMap];
-                        markerItem.Item1 = MapToWorldPos(localTouchPosition);
-                        _markers[_newMarkerOnMap] = markerItem;
+                        case MapActionMode.Pan:
+                            _mapRT.offsetMin = initialOffsetMin + delta;
+                            _mapRT.offsetMax = _mapRT.offsetMin;
+                            break;
+                        case MapActionMode.EditMarker:
+                            var markerItem = _markers[_newMarkerOnMap];
+                            markerItem.Item1 = MapPosToGPS(localTouchPosition);
+                            _markers[_newMarkerOnMap] = markerItem;
+                            break;
+                        case MapActionMode.SelectMarker:
+                            var newPos = _newMarkerOnMap.transform.position;
+                            newPos.z -= 0.02f;
+                            newPos.y -= 0.033f;
+                            _actionButtons.transform.position = newPos;
+                            break;
                     }
-                    else
-                    {
-                        _mapRT.offsetMin = initialOffsetMin + delta;
-                        _mapRT.offsetMax = _mapRT.offsetMin;
-                    }
+
+                    // if (_navigationOn)
+                    // {
+                    //     Debug.Log("Navigate");
+                    //     _lineRenderer.SetPosition(0, _curloc.transform.position);
+                    //     _lineRenderer.SetPosition(1, _navigateTo.transform.position);
+                    // }
 
                     // Write/update the last-position
                     if (lastPositions.ContainsKey(interactor))
@@ -177,7 +227,7 @@ public class MapController : MRTKBaseInteractable
                         lastPositions.Add(interactor, localTouchPosition);
                     }
 
-                    lastTouchPosition = localTouchPosition;
+                    _lastTouchPosition = localTouchPosition;
 
                     break;
                 }
@@ -203,9 +253,6 @@ public class MapController : MRTKBaseInteractable
                 MapRestoreLastRotation();
                 CenterMapAtUser();
                 break;
-            case MapFocusMode.MapCenterUser:
-                // CenterMapAtUser();
-                break;
             case MapFocusMode.MapAlignUser:
                 MapRestoreLastRotation();
                 break;
@@ -223,20 +270,11 @@ public class MapController : MRTKBaseInteractable
 
     private void CenterMapAtUser()
     {
-        // Convert userPos to mapRT offsets
-        // Note: userPos.xz gives offsets in ROTATED MAP SPACE,
-        //       but we must compute offsets in PANEL SPACE
-        float scaleW2M = 100.0f * _mapRT.localScale.x;
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
-
-        Vector3 userPos = _mainCamera.transform.position;
-
-        // User pos in map space, with rotation of map (xz components)
-        Vector3 userMapPos = userPos * scaleW2M;
-        // Rotate userMapPos back to get coords in un-rotated map coords (xz components)
-        Vector3 userMapPosUnrot = Quaternion.Euler(0.0f, -mapRotZDeg, 0.0f) * userMapPos;
-
-        _mapRT.offsetMin = -new Vector2(userMapPosUnrot.x, userMapPosUnrot.z);
+        // Vector3 userPos = _mainCamera.transform.position;
+		// Vector2 userPosMap = WorldToMapPos(userPos);
+		Vector2 GPSCoords = getGPSCoords();
+		Vector2 userPosMap = GPSToMapPos(GPSCoords.x, GPSCoords.y);
+        _mapRT.offsetMin = -userPosMap;
         _mapRT.offsetMax = _mapRT.offsetMin;
     }
 
@@ -250,7 +288,6 @@ public class MapController : MRTKBaseInteractable
     {
         int newMode = ((int)_focusMode + 1) % (int)MapFocusMode.NumMapFocusModes;
         _focusMode = (MapFocusMode)newMode;
-        Debug.Log(_focusMode);
     }
 
     private void MapStoreLastRotation()
@@ -268,30 +305,24 @@ public class MapController : MRTKBaseInteractable
     {
         base.OnSelectEntered(args);
 
-        // Do something here (?)
+        if (_actionButtons.activeSelf)
+        {
+            _actionButtons.SetActive(false);
+            _actionMode = MapActionMode.Pan;
+            _newMarkerOnMap = null;
+            _newMarkerOnCompass = null;
+        }
     }
 
     protected override void OnSelectExited(SelectExitEventArgs args)
     {
         base.OnSelectExited(args);
 
-        if (_editMarkerMode)
+        if (_actionMode == MapActionMode.EditMarker)
         {
-            // Discard marker if being "thrown out" of the map
-            if (Math.Abs(lastTouchPosition.x) > _panelXBound ||
-                Math.Abs(lastTouchPosition.y) > _panelYBound)
-            {
-                _markers.Remove(_newMarkerOnMap);
-                Destroy(_newMarkerOnMap);
-                Destroy(_newMarkerOnCompass);
-            }
-            else
-            {
-                _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
-                _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
-            }
-
-            _editMarkerMode = false;
+            _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
+            _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
+            _actionMode = MapActionMode.Pan;
         }
 
         // Remove the interactor from our last-position collection when it leaves.
@@ -320,12 +351,36 @@ public class MapController : MRTKBaseInteractable
         _buttonPressedTime = Time.time;
     }
 
+    public void OnMarkerMovePressed()
+    {
+        _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+        _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+        _actionMode = MapActionMode.EditMarker;
+        _actionButtons.SetActive(false);
+    }
+
+    public void OnMarkerDeletePressed()
+    {
+        _markers.Remove(_newMarkerOnMap);
+        Destroy(_newMarkerOnMap);
+        Destroy(_newMarkerOnCompass);
+        _actionMode = MapActionMode.Pan;
+        _actionButtons.SetActive(false);
+    }
+
+    // public void OnMarkerNavigatePressed()
+    // {
+    //     _navigationOn = !_navigationOn;
+    //     _navigateTo = _navigationOn ? _newMarkerOnMap : null;
+    //     _lineRenderer.positionCount = _navigationOn ? 2 : 0;
+    // }
+
     public void OnMarkerButtonSelectExit()
     {
         float delta = Time.time - _buttonPressedTime;
-        if (delta > 1f)
+        if (delta > 0.7f)
         {
-            _editMarkerMode = true;
+            _actionMode = MapActionMode.AddMarker;
         }
         else
         {
@@ -354,13 +409,14 @@ public class MapController : MRTKBaseInteractable
 
     private Vector3 MapToWorldPos(Vector2 mapPos)
     {
-        float scaleW2M = 100.0f * _mapRT.localScale.x;
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
         Vector2 mapOffset = _mapRT.offsetMin;
         Vector3 worldPos = new Vector3(mapPos.x - mapOffset.x, 0, mapPos.y - mapOffset.y);
 
         // Un-rotate then scale to obtain the world space position
+        float mapRotZDeg = _mapRT.localEulerAngles.z;
         worldPos = Quaternion.Euler(0.0f, mapRotZDeg, 0.0f) * worldPos;
+
+        float scaleW2M = 1000.0f * _mapRT.localScale.x;
         worldPos /= scaleW2M;
 
         return worldPos;
@@ -368,7 +424,7 @@ public class MapController : MRTKBaseInteractable
 
     private Vector2 WorldToMapPos(Vector3 worldPos)
     {
-        float scaleW2M = 100.0f * _mapRT.localScale.x;
+        float scaleW2M = 1000.0f * _mapRT.localScale.x;
         float mapRotZDeg = _mapRT.localEulerAngles.z;
 
         // Rotate then scale to obtain the map space position
@@ -378,20 +434,58 @@ public class MapController : MRTKBaseInteractable
         return new Vector2(mapPos.x, mapPos.z);
     }
 
+    private Vector2 GPSToMapPos(float latitudeDeg, float longitudeDeg)
+    {
+        float du = (longitudeDeg - satCenterLongitude) / satLongitudeRange;  // -.5 ~ +.5 in horizontal map space
+        float dv = (latitudeDeg - satCenterLatitude) / satLatitudeRange;     // -.5 ~ +.5 in vertical map sapce
+
+        float mapRotZDeg = _mapRT.localEulerAngles.z;
+        Vector3 mapPos = new Vector3(du, 0, dv) * _mapRT.localScale.x * _canvasRT.rect.height;
+        mapPos = Quaternion.Euler(0.0f, -mapRotZDeg, 0.0f) * mapPos;
+
+        return new Vector2(mapPos.x, mapPos.z);
+    }
+
+	// Acutually: PanelPos to GPS
+    private Vector2 MapPosToGPS(Vector2 mapPos)
+    {
+        Vector2 mapOffset = _mapRT.offsetMin;
+        Vector3 worldPos = new Vector3(mapPos.x - mapOffset.x, 0, mapPos.y - mapOffset.y);
+
+        // Un-rotate then scale to obtain the world space position
+        float mapRotZDeg = _mapRT.localEulerAngles.z;
+        worldPos = Quaternion.Euler(0.0f, mapRotZDeg, 0.0f) * worldPos;
+
+		worldPos /= (_mapRT.localScale.x * _canvasRT.rect.height);  // (du, 0, dv) in GPSToMapPos
+
+		float longitudeDeg = worldPos.x * satLongitudeRange + satCenterLongitude;
+		float latitudeDeg = worldPos.z * satLatitudeRange + satCenterLatitude;
+
+        return new Vector2(latitudeDeg, longitudeDeg);
+    }
+
+    // For simulation in Unity
+    private Vector2 getGPSCoords()
+    {
+        Vector3 worldPos = _mainCamera.transform.position;
+        Vector2 gpsCoords = new Vector2(satCenterLatitude, satCenterLongitude);
+        gpsCoords += 5e-5f * new Vector2(worldPos.z, worldPos.x);
+        return gpsCoords;
+    }
+
     private void UpdateMarkers()
     {
-        float scaleW2M = 100.0f * _mapRT.localScale.x;
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
         float compassWidth = _compassRT.rect.width / 360.0f;
 
-        Transform cameraTf = _mainCamera.transform;
-        Vector3 userPos = cameraTf.position;
-        Vector3 userLook = cameraTf.forward;
+        // Vector3 userPos = Camera.main.transform.position;
+        Vector2 userGPS = getGPSCoords();
+        Vector3 userLook = Camera.main.transform.forward;
         userLook.y = 0.0f;
 
         foreach(var kvp in _markers)
         {
-            Vector3 worldPos = kvp.Value.Item1;    // mark pos in world space
+            // Vector3 posWorldspace = item.Item1;    // marker pos in world space
+            Vector2 markerGPS = kvp.Value.Item1;    // marker's GPS coords
             RectTransform rtMap = kvp.Value.Item4;
             RectTransform rtCompass = kvp.Value.Item5;
 
@@ -399,21 +493,19 @@ public class MapController : MRTKBaseInteractable
             // Note: pos gives offsets in rotated MAP SPACE,
             //       but we must compute offsets in PANEL SPACE
 
-            // Marker pos in map space, with rotation of map (xz components)
-            Vector3 mapPos = worldPos * scaleW2M;
-            // Rotate mapPos back to get coords in unrotated map coords (xz components)
-            Vector3 mapPosUnrot = Quaternion.Euler(0.0f, -mapRotZDeg, 0.0f) * mapPos;
-
-            rtMap.offsetMin = _mapRT.offsetMin + new Vector2(mapPosUnrot.x, mapPosUnrot.z);
+            // rtMap.offsetMin = _mapRT.offsetMin + new Vector2(posMapspaceUnrot.x, posMapspaceUnrot.z);
+            rtMap.offsetMin = _mapRT.offsetMin + GPSToMapPos(markerGPS.x, markerGPS.y);
             rtMap.offsetMax = rtMap.offsetMin;
 
             // Adjust marker position on compass
-            // 1. Get relative angle of marker from front in range -180 ~ 180
-            Vector3 markerDir = worldPos - userPos;
-            markerDir.y = 0.0f;
+            // Given userGPS and markerGPS, get markerDir that points from user to marker
+            // Vector3 markerDir = posWorldspace - userPos;
+            // markerDir.y = 0.0f;
+            Vector2 markerRelGPS = markerGPS - userGPS;  // delta (latitutude, longitude)
+            Vector3 markerDir = new Vector3(markerRelGPS.y, 0.0f, markerRelGPS.x);
             float angleToMarker = -Vector3.SignedAngle(markerDir, userLook, Vector3.up);
             rtCompass.offsetMin = new Vector2(angleToMarker * compassWidth, 0.0f);
             rtCompass.offsetMax = rtCompass.offsetMin;
         }
-    }
+	}
 }
