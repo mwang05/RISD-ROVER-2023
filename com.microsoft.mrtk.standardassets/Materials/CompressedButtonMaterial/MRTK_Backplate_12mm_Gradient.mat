@@ -41,7 +41,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Iridescent_Map_:
-        m_Texture: {fileID: 2800000, guid: 1c53ac3264b9f9b478ba62ee57b2f159, type: 3}
+        m_Texture: {fileID: 2800000, guid: 395f504f73b61914f819a2c06733dfc7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -62,7 +62,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _Absolute_Sizes_: 1
-    - _Angle_: -45
+    - _Angle_: 90
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -72,16 +72,16 @@ Material:
     - _Edge_Width_: 0.5
     - _Fade_Out_: 1
     - _Filter_Width_: 1
-    - _Frequency_: 0.96
+    - _Frequency_: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Gradient_Enable_: 0
     - _Highlight_: 0
     - _Highlight_Width_: 0.25
-    - _Iridescence_Edge_Intensity_: 1
+    - _Iridescence_Edge_Intensity_: 0.667
     - _Iridescence_Enable_: 1
-    - _Iridescence_Intensity_: 0.35
+    - _Iridescence_Intensity_: 0.48
     - _Iridescent_Map_Enable_: 1
     - _Line_Enable_: 1
     - _Line_Gradient_Blend_: 0
@@ -105,7 +105,7 @@ Material:
     - _StencilOperation: 0
     - _StencilReference: 0
     - _UVSec: 0
-    - _Vertical_Offset_: 0
+    - _Vertical_Offset_: 0.64
     - _ZWrite: 1
     m_Colors:
     - _Base_Color_: {r: 0.11372549, g: 0.11372549, b: 0.32156864, a: 1}

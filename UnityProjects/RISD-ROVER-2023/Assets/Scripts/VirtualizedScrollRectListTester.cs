@@ -18,17 +18,17 @@ namespace Microsoft.MixedReality.Toolkit.Examples.Demos
         private float destScroll;
         private bool animate;
 
-        private string[] words = { "one", "two", "three", "zebra", "keyboard", "rabbit", "graphite", "ruby", };
+        private string[] words = { "Recording 1", "Recording 2", "Recording 3", "Recording 4", "Recording 5", "Recording 6", "Recording 7", "Recording 8", };
         // Start is called before the first frame update
         private void Start()
         {
             list = GetComponent<VirtualizedScrollRectList>();
-            list.OnVisible = (go, i) =>
+            list.OnVisible = (go, _) =>
             {
                 foreach (var text in go.GetComponentsInChildren<TextMeshProUGUI>())
                 {
                     if (text.gameObject.name == "Text")
-	                    text.text = $"{i} {words[i%words.Length]}";
+	                    text.text = $" {words[_%words.Length]}";
                 }
             };
         }
