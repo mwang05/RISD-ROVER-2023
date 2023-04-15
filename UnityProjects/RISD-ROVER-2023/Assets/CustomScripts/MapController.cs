@@ -52,7 +52,6 @@ public class MapController : MRTKBaseInteractable
         Rover
     };
     private Vector2 _lastTouchPosition;
-    private bool _editMarkerMode = false;
 
     enum MapActionMode
     {
@@ -82,9 +81,17 @@ public class MapController : MRTKBaseInteractable
     private RectTransform _actionButtonsRT;
     private MapActionMode _actionMode;
     private bool _navigationOn = false;
-    private GameObject _navigateTo;
-    // private LineRenderer _lineRenderer;
-    // private GameObject _curloc;
+    private RectTransform _navigateTo;
+    private LineRenderer _lineRenderer;
+    private RectTransform _curlocRT;
+    private Transform _panelTf;
+
+    // Map follow
+    [SerializeField] private float distanceFromUser;
+    private Transform _canvasTf;
+    private float _canvasScale;
+    private float _canvasHalfWidth;
+    private float _canvasHalfHeight;
 
     void Start()
     {
@@ -108,8 +115,16 @@ public class MapController : MRTKBaseInteractable
         _actionButtonsRT = _actionButtons.GetComponent<RectTransform>();
         _actionButtons.SetActive(false);
         _actionMode = MapActionMode.Pan;
-        // _lineRenderer = GetComponent<LineRenderer>();
-        // _curloc = GameObject.Find("Curloc");
+        _lineRenderer = GameObject.Find("Map").GetComponent<LineRenderer>();
+        _lineRenderer.startWidth = 0.005f;
+        _lineRenderer.endWidth = 0.005f;
+        _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
+        _canvasTf = GameObject.Find("Canvas").GetComponent<RectTransform>().transform;
+        _panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
+        _canvasScale = GameObject.Find("Canvas").transform.localScale.x;
+        Rect canvasR = _canvasRT.rect;
+        _canvasHalfWidth = canvasR.width / 2;
+        _canvasHalfHeight = canvasR.height / 2;
     }
 
     void Update()
@@ -124,6 +139,8 @@ public class MapController : MRTKBaseInteractable
                 break;
         }
         if (_markers.Count > 0) UpdateMarkers();
+        MapFollow();
+        if (_navigationOn) Navigate();
     }
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
@@ -185,6 +202,11 @@ public class MapController : MRTKBaseInteractable
                                 _actionButtons.SetActive(true);
                                 _actionMode = MapActionMode.SelectMarker;
                             }
+                            else
+                            {
+                                _newMarkerOnMap = null;
+                                _newMarkerOnCompass = null;
+                            }
                         }
                     }
 
@@ -209,13 +231,6 @@ public class MapController : MRTKBaseInteractable
                             _actionButtons.transform.position = newPos;
                             break;
                     }
-
-                    // if (_navigationOn)
-                    // {
-                    //     Debug.Log("Navigate");
-                    //     _lineRenderer.SetPosition(0, _curloc.transform.position);
-                    //     _lineRenderer.SetPosition(1, _navigateTo.transform.position);
-                    // }
 
                     // Write/update the last-position
                     if (lastPositions.ContainsKey(interactor))
@@ -368,12 +383,36 @@ public class MapController : MRTKBaseInteractable
         _actionButtons.SetActive(false);
     }
 
-    // public void OnMarkerNavigatePressed()
-    // {
-    //     _navigationOn = !_navigationOn;
-    //     _navigateTo = _navigationOn ? _newMarkerOnMap : null;
-    //     _lineRenderer.positionCount = _navigationOn ? 2 : 0;
-    // }
+    public void OnMarkerNavigatePressed()
+    {
+        _navigationOn = !_navigationOn;
+        _navigateTo = _navigationOn ? _newMarkerOnMap.GetComponent<RectTransform>() : null;
+        _lineRenderer.positionCount = _navigationOn ? 2 : 0;
+        _actionButtons.SetActive(false);
+    }
+
+    private Vector3 OffsetToPos(Vector2 offset)
+    {
+        Vector3 pos = _panelTf.position;
+        Quaternion rot = _panelTf.rotation;
+
+        pos += 0.2f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
+        pos += 0.15f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
+        pos += 0.005f * (rot * Vector3.back);
+
+        return pos;
+    }
+
+    private void Navigate()
+    {
+        // _lineRenderer.SetPosition(0, _curloc.GetComponent<RectTransform>().localPosition);
+        // _lineRenderer.SetPosition(1, _navigateTo.GetComponent<RectTransform>().localPosition);
+        // Debug.Log(_curloc.transform.localPosition);
+        // Debug.Log(_navigateTo.transform.localPosition);
+        Vector3 mapPos = _panelTf.position;
+        _lineRenderer.SetPosition(0, OffsetToPos(_curlocRT.offsetMin));
+        _lineRenderer.SetPosition(1, OffsetToPos(_navigateTo.offsetMin));
+    }
 
     public void OnMarkerButtonSelectExit()
     {
@@ -479,7 +518,7 @@ public class MapController : MRTKBaseInteractable
 
         // Vector3 userPos = Camera.main.transform.position;
         Vector2 userGPS = getGPSCoords();
-        Vector3 userLook = Camera.main.transform.forward;
+        Vector3 userLook = _mainCamera.transform.forward;
         userLook.y = 0.0f;
 
         foreach(var kvp in _markers)
@@ -508,4 +547,17 @@ public class MapController : MRTKBaseInteractable
             rtCompass.offsetMax = rtCompass.offsetMin;
         }
 	}
+
+    private void MapFollow()
+    {
+        Transform cameraTf = _mainCamera.transform;
+        Vector3 userPos = cameraTf.position;
+        Vector3 userLook = cameraTf.forward;
+
+        userLook.y = 0;
+        userLook = Vector3.Normalize(userLook);
+
+        _canvasTf.position = userPos + distanceFromUser * userLook;
+        _canvasTf.rotation = cameraTf.rotation;
+    }
 }
