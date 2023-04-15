@@ -398,7 +398,7 @@ public class MapController : MRTKBaseInteractable
 
         pos += 0.2f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
         pos += 0.15f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
-        pos += 0.005f * (rot * Vector3.back);
+        pos += 0.01f * (rot * Vector3.back);
 
         return pos;
     }
