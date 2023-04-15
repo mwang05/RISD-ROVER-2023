@@ -27,6 +27,7 @@ namespace Microsoft.MixedReality.Toolkit
             Toggle,
             // User can only toggle on, not off. Useful for radio buttons.
             OneWayToggle
+            
         }
 
         /// <summary>
