@@ -58,6 +58,5 @@ public class Compass : MonoBehaviour
 								userLook * distanceFromUser +
 								userUp * calculateOffsetUp(angleUp));
 
-		Debug.Log(userLook);
     }
 }
