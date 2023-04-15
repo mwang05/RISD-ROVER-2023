@@ -20,6 +20,7 @@ public class MapFollow : MonoBehaviour
     {
         Transform cameraTf = _mainCamera.transform;
         Vector3 userPos = cameraTf.position;
+        Debug.Log(userPos);
         Vector3 userLook = cameraTf.forward;
 
         userLook.y = 0;

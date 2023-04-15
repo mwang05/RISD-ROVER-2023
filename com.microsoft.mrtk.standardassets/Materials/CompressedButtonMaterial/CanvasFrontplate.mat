@@ -21,7 +21,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Blob_Texture_:
-        m_Texture: {fileID: 2800000, guid: 25e7d0b9c6af4790ad54956f4d688118, type: 3}
+        m_Texture: {fileID: 2800000, guid: 395f504f73b61914f819a2c06733dfc7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -79,6 +79,6 @@ Material:
     - _Blob_Position_: {r: 0.5, g: 0, b: 0.2, a: 1}
     - _Blob_Position_2_: {r: 10, g: 10.1, b: -0.6, a: 1}
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
-    - _ClipRectRadii: {r: 10, g: 10, b: 10, a: 10}
+    - _ClipRectRadii: {r: 12, g: 10, b: 10, a: 10}
     - _Edge_Color_: {r: 0.53, g: 0.53, b: 0.53, a: 1}
   m_BuildTextureStacks: []

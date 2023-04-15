@@ -4,20 +4,26 @@ using UnityEngine;
 
 public class EgressEnd : MonoBehaviour
 {
-     private GameObject[] objectsToDestroy;
-
-    private void OnEnable()
+     public GameObject[] objectsToDestroy;
+     public float delay = 3f;
+    
+private void Start()
+{
+    Invoke("DisabledObject", delay);
+}
+    private void DisabledObject()
     {
+       GameObject egressCompleteObject = GameObject.Find("Egress Complete");
         objectsToDestroy = GameObject.FindGameObjectsWithTag("Egress");
-        GameObject egressCompleteObject = GameObject.Find("Egress Complete");
+        
 
         foreach (GameObject egress in objectsToDestroy)
         {
-            Destroy(egress);
-            Destroy(egressCompleteObject, 3f);
-        
+            egress.SetActive(false);   
+            egressCompleteObject.SetActive(false);
         }
-
+       
+        
    
     }
 }
