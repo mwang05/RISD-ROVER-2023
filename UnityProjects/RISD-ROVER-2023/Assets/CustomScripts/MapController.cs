@@ -32,6 +32,8 @@ public class MapController : MRTKBaseInteractable
 
     // Zoom
     [SerializeField] private float _maxZoom = 2.0f;
+    private List<float> zoomSeries = new List<float>{ 1, 2, 5, 10 };
+    private int zoomIndex = 1;
 
     // Pan
     private Dictionary<IXRInteractor, Vector2> lastPositions = new Dictionary<IXRInteractor, Vector2>();
@@ -107,10 +109,10 @@ public class MapController : MRTKBaseInteractable
         var panelSize = GameObject.Find("Map Panel").GetComponent<BoxCollider>().size;
         _panelXBound = panelSize.x / 2;
         _panelYBound = panelSize.y / 2;
-        _waypointIcon = GameObject.Find("WaypointIcon").GetComponent<FontIconSelector>();
-        _obstacleIcon = GameObject.Find("ObstacleIcon").GetComponent<FontIconSelector>();
-        _markerIcon = GameObject.Find("MarkerIcon").GetComponent<FontIconSelector>();
-        _roverIcon = GameObject.Find("RoverIcon").GetComponent<FontIconSelector>();
+        // _waypointIcon = GameObject.Find("WaypointIcon").GetComponent<FontIconSelector>();
+        // _obstacleIcon = GameObject.Find("ObstacleIcon").GetComponent<FontIconSelector>();
+        // _markerIcon = GameObject.Find("MarkerIcon").GetComponent<FontIconSelector>();
+        // _roverIcon = GameObject.Find("RoverIcon").GetComponent<FontIconSelector>();
         _actionButtons = GameObject.Find("Marker Action Buttons");
         _actionButtonsRT = _actionButtons.GetComponent<RectTransform>();
         _actionButtons.SetActive(false);
@@ -125,6 +127,7 @@ public class MapController : MRTKBaseInteractable
         Rect canvasR = _canvasRT.rect;
         _canvasHalfWidth = canvasR.width / 2;
         _canvasHalfHeight = canvasR.height / 2;
+        _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
     }
 
     void Update()
@@ -251,11 +254,22 @@ public class MapController : MRTKBaseInteractable
     }
 
     /************* Scale ***************/
-    public void MapScaleCallback(SliderEventData args)
+
+    private Vector3 getLocalScale(float scale)
     {
-        if (_mapRT == null) return;
-        float scale = 1.0f + args.NewValue * _maxZoom;
-        _mapRT.localScale = new Vector3(scale, scale, 1.0f);
+        return new Vector3(scale, scale, 1.0f);
+    }
+
+    public void MapZoomInCallback()
+    {
+        zoomIndex = zoomIndex >= zoomSeries.Count - 1 ? zoomIndex : zoomIndex + 1;
+        _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+    }
+
+    public void MapZoomOutCallback()
+    {
+        zoomIndex = zoomIndex <= 0 ? zoomIndex : zoomIndex - 1;
+        _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
     }
 
     /************* Focus **************/
@@ -423,25 +437,25 @@ public class MapController : MRTKBaseInteractable
         }
         else
         {
-            switch (_selectedMarkerType)
-            {
-                case MarkerType.Waypoint:
-                    _waypointIcon.CurrentIconName =
-                        _waypointIcon.CurrentIconName == "Icon 30" ? "Icon 10" : "Icon 30";
-                    break;
-                case MarkerType.Obstacle:
-                    _obstacleIcon.CurrentIconName =
-                        _obstacleIcon.CurrentIconName == "Icon 15" ? "Icon 10" : "Icon 15";
-                    break;
-                case MarkerType.Marker:
-                    _markerIcon.CurrentIconName =
-                        _markerIcon.CurrentIconName == "Icon 14" ? "Icon 10" : "Icon 14";
-                    break;
-                case MarkerType.Rover:
-                    _roverIcon.CurrentIconName =
-                        _roverIcon.CurrentIconName == "Icon 54" ? "Icon 10" : "Icon 54";
-                    break;
-            }
+            // switch (_selectedMarkerType)
+            // {
+            //     case MarkerType.Waypoint:
+            //         _waypointIcon.CurrentIconName =
+            //             _waypointIcon.CurrentIconName == "Icon 30" ? "Icon 10" : "Icon 30";
+            //         break;
+            //     case MarkerType.Obstacle:
+            //         _obstacleIcon.CurrentIconName =
+            //             _obstacleIcon.CurrentIconName == "Icon 15" ? "Icon 10" : "Icon 15";
+            //         break;
+            //     case MarkerType.Marker:
+            //         _markerIcon.CurrentIconName =
+            //             _markerIcon.CurrentIconName == "Icon 14" ? "Icon 10" : "Icon 14";
+            //         break;
+            //     case MarkerType.Rover:
+            //         _roverIcon.CurrentIconName =
+            //             _roverIcon.CurrentIconName == "Icon 54" ? "Icon 10" : "Icon 54";
+            //         break;
+            // }
             _markersObj.SetActive(!_markersObj.activeSelf);
         }
     }
