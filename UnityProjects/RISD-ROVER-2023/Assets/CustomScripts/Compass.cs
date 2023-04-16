@@ -7,7 +7,7 @@ using TMPro;
 public class Compass : MonoBehaviour
 {
     [SerializeField] private float distanceFromUser = 0.48f;
-    [SerializeField] private float offsetUp = 0.2f;
+    [SerializeField] private float offsetUp = 0.03f;
 
     private RawImage _compassImage;
     private TextMeshProUGUI _compassDirText;
