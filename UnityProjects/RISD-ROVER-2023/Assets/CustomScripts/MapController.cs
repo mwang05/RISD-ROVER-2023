@@ -88,6 +88,13 @@ public class MapController : MRTKBaseInteractable
     private RectTransform _curlocRT;
     private Transform _panelTf;
 
+    // Waypoint
+    private List<(Vector2, GameObject, RectTransform)> waypoints;
+    private bool recordingWaypoints = true;
+    [SerializeField] private float waypointInterval = 0.00005f;
+    [SerializeField] private GameObject waypointPrefab;
+    private Transform waypointsTF;
+
     // Map follow
     [SerializeField] private float distanceFromUser;
     private Transform _canvasTf;
@@ -120,6 +127,7 @@ public class MapController : MRTKBaseInteractable
         _lineRenderer = GameObject.Find("Map").GetComponent<LineRenderer>();
         _lineRenderer.startWidth = 0.001f;
         _lineRenderer.endWidth = 0.001f;
+        _lineRenderer.numCornerVertices = 5;
         _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
         _canvasTf = GameObject.Find("Canvas").GetComponent<RectTransform>().transform;
         _panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
@@ -128,6 +136,8 @@ public class MapController : MRTKBaseInteractable
         _canvasHalfWidth = canvasR.width / 2;
         _canvasHalfHeight = canvasR.height / 2;
         _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        waypoints = new List<(Vector2, GameObject, RectTransform)>();
+        waypointsTF = GameObject.Find("Waypoints").GetComponent<Transform>();
     }
 
     void Update()
@@ -144,6 +154,54 @@ public class MapController : MRTKBaseInteractable
         if (_markers.Count > 0) UpdateMarkers();
         MapFollow();
         if (_navigationOn) Navigate();
+        if (recordingWaypoints) RecordWaypoints();
+        else ReplayWaypoints();
+    }
+
+    private void RecordWaypoints()
+    {
+        // Vector2 currGPS = MapPosToGPS(new Vector2(0, 0));
+        Vector2 currGPS = getGPSCoords();
+        int numWaypoints = waypoints.Count;
+
+        if (numWaypoints == 0 || (currGPS - waypoints[numWaypoints-1].Item1).magnitude > waypointInterval)
+        {
+            GameObject newWaypoint = Instantiate(waypointPrefab, waypointsTF);
+            newWaypoint.SetActive(false);
+            waypoints.Add((currGPS, newWaypoint, newWaypoint.GetComponent<RectTransform>()));
+        }
+    }
+
+    private void ReplayWaypoints()
+    {
+        Vector2 currGPS = getGPSCoords();
+        int numWaypoints = waypoints.Count;
+
+        if (numWaypoints == 0) return;
+
+        if ((currGPS - waypoints[numWaypoints - 1].Item1).magnitude < waypointInterval / 3)
+        {
+            numWaypoints--;
+            Destroy(waypoints[numWaypoints].Item2);
+            waypoints.RemoveAt(numWaypoints);
+            _lineRenderer.positionCount = numWaypoints + 1;
+        }
+
+        for (int i = 0; i < numWaypoints; i++)
+        {
+            Vector2 waypointGPS = waypoints[i].Item1;
+            RectTransform rtMap = waypoints[i].Item3;
+
+            // Translate (offset) markers relative to map RT
+            // Note: pos gives offsets in rotated MAP SPACE,
+            //       but we must compute offsets in PANEL SPACE
+
+            rtMap.offsetMin = _mapRT.offsetMin + GPSToMapPos(waypointGPS.x, waypointGPS.y);
+            rtMap.offsetMax = rtMap.offsetMin;
+            _lineRenderer.SetPosition(i, OffsetToPos(rtMap.offsetMin));
+        }
+
+        _lineRenderer.SetPosition(numWaypoints, OffsetToPos(_curlocRT.offsetMin));
     }
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
@@ -402,6 +460,7 @@ public class MapController : MRTKBaseInteractable
         _navigationOn = !_navigationOn;
         _navigateTo = _navigationOn ? _newMarkerOnMap.GetComponent<RectTransform>() : null;
         _lineRenderer.positionCount = _navigationOn ? 2 : 0;
+        _actionMode = MapActionMode.Pan;
         _actionButtons.SetActive(false);
     }
 
@@ -573,5 +632,19 @@ public class MapController : MRTKBaseInteractable
 
         _canvasTf.position = userPos + distanceFromUser * userLook;
         _canvasTf.rotation = cameraTf.rotation;
+    }
+
+    public void ToggleWaypointAction()
+    {
+        recordingWaypoints = !recordingWaypoints;
+
+        foreach (var waypoint in waypoints)
+        {
+            if (!recordingWaypoints) waypoint.Item2.SetActive(true);
+            else Destroy(waypoint.Item2);
+        }
+
+        if (recordingWaypoints) waypoints.Clear();
+        else _lineRenderer.positionCount = waypoints.Count + 1;
     }
 }
