@@ -91,10 +91,10 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Radius_: 0.013
-    - _Radius_Bottom_Left_: 1
-    - _Radius_Bottom_Right_: 1
-    - _Radius_Top_Left_: 1
-    - _Radius_Top_Right_: 1
+    - _Radius_Bottom_Left_: 0.25
+    - _Radius_Bottom_Right_: 0.25
+    - _Radius_Top_Left_: 0.25
+    - _Radius_Top_Right_: 0.25
     - _Rate_: 0.862
     - _Reflected_: 1
     - _Smooth_Edges_: 1
