@@ -118,8 +118,8 @@ public class MapController : MRTKBaseInteractable
         _actionButtons.SetActive(false);
         _actionMode = MapActionMode.Pan;
         _lineRenderer = GameObject.Find("Map").GetComponent<LineRenderer>();
-        _lineRenderer.startWidth = 0.005f;
-        _lineRenderer.endWidth = 0.005f;
+        _lineRenderer.startWidth = 0.001f;
+        _lineRenderer.endWidth = 0.001f;
         _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
         _canvasTf = GameObject.Find("Canvas").GetComponent<RectTransform>().transform;
         _panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
@@ -410,8 +410,8 @@ public class MapController : MRTKBaseInteractable
         Vector3 pos = _panelTf.position;
         Quaternion rot = _panelTf.rotation;
 
-        pos += 0.2f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
-        pos += 0.15f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
+        pos += 0.09f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
+        pos += 0.07f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
         pos += 0.01f * (rot * Vector3.back);
 
         return pos;
