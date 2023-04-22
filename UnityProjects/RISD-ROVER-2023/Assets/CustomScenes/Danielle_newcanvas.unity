@@ -1981,6 +1981,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 13809731}
     m_Modifications:
+    - target: {fileID: 292975618734406814, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
+      propertyPath: stateContainers.entries.Array.data[4].value.effects.Array.data[0].targets.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1218303500668125045, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
       propertyPath: <ToggleMode>k__BackingField
       value: 1
@@ -2264,6 +2268,18 @@ PrefabInstance:
     - target: {fileID: 3322836006501307878, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
       propertyPath: m_Name
       value: O2 supply
+      objectReference: {fileID: 0}
+    - target: {fileID: 3360207138770406365, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
+      propertyPath: stateContainers.entries.Array.data[4].value.effects.Array.data[0].targets.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4175160657099086353, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
+      propertyPath: stateContainers.entries.Array.data[4].value.effects.Array.data[0].targets.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4482555734120582843, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
+      propertyPath: stateContainers.entries.Array.data[4].value.effects.Array.data[0].targets.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4790628493459305914, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
       propertyPath: <ToggleMode>k__BackingField
@@ -2724,6 +2740,14 @@ PrefabInstance:
     - target: {fileID: 6419324010296960587, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
       propertyPath: m_fontSizeBase
       value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 6461198741706729856, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
+      propertyPath: stateContainers.entries.Array.data[4].value.effects.Array.data[0].targets.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7829172735628821620, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
+      propertyPath: stateContainers.entries.Array.data[4].value.effects.Array.data[0].targets.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8094262165834645605, guid: 4aa894db166a5e24a99a3ae69a5aadec, type: 3}
       propertyPath: m_text
@@ -6156,6 +6180,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 45967691}
     m_Modifications:
+    - target: {fileID: 1370136077638118702, guid: dc7ef7d5625c3454ab5097673a207485, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7256543900600860856, guid: dc7ef7d5625c3454ab5097673a207485, type: 3}
       propertyPath: m_text
       value: Skip
