@@ -26,7 +26,7 @@ Material:
     m_Floats:
     - _Bevel_Radius_: 12
     - _Bias_: 0.5
-    - _Blend_Exponent_: 1
+    - _Blend_Exponent_: 1.23
     - _DstBlend: 1
     - _Falloff_: 2.5
     - _Fixed_Unit_Multiplier_: 1

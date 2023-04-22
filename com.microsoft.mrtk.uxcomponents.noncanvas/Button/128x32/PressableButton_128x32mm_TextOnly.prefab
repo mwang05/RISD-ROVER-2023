@@ -693,7 +693,6 @@ Transform:
   - {fileID: 7475759467476053123}
   - {fileID: 4237014119923168988}
   - {fileID: 994071487416343378}
-  - {fileID: 1290675915836177998}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -729,6 +728,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   m_InteractionLayers:
     m_Bits: 1
+  m_DistanceCalculationMode: 1
   m_SelectMode: 1
   m_CustomReticle: {fileID: 0}
   m_FirstHoverEntered:
@@ -785,6 +785,8 @@ MonoBehaviour:
   m_Deactivated:
     m_PersistentCalls:
       m_Calls: []
+  m_StartingHoverFilters: []
+  m_StartingSelectFilters: []
   m_OnFirstHoverEntered:
     m_PersistentCalls:
       m_Calls: []
@@ -894,18 +896,19 @@ MonoBehaviour:
         m_Calls: []
   disabledInteractorTypes:
   - reference: Microsoft.MixedReality.Toolkit.IGrabInteractor, Microsoft.MixedReality.Toolkit.Core
-  toggleMode: 0
-  selectThreshold: 0.9
-  deselectThreshold: 0.1
-  triggerOnRelease: 1
-  useGazeDwell: 0
-  gazeDwellTime: 1
-  useFarDwell: 0
-  farDwellTime: 1
+  <ToggleMode>k__BackingField: 0
+  <SelectThreshold>k__BackingField: 0.9
+  <DeselectThreshold>k__BackingField: 0.1
+  <TriggerOnRelease>k__BackingField: 1
+  <UseGazeDwell>k__BackingField: 0
+  <GazeDwellTime>k__BackingField: 1
+  <UseFarDwell>k__BackingField: 0
+  <FarDwellTime>k__BackingField: 1
   allowSelectByVoice: 1
   speechRecognitionKeyword: select
-  voiceRequiresFocus: 1
-  isToggled:
+  <VoiceRequiresFocus>k__BackingField: 1
+  <SelectRequiresHover>k__BackingField: 0
+  <IsToggled>k__BackingField:
     active: 0
     onEntered:
       m_PersistentCalls:
@@ -913,13 +916,13 @@ MonoBehaviour:
     onExited:
       m_PersistentCalls:
         m_Calls: []
-  onClicked:
+  <OnClicked>k__BackingField:
     m_PersistentCalls:
       m_Calls: []
-  onEnabled:
+  <OnEnabled>k__BackingField:
     m_PersistentCalls:
       m_Calls: []
-  onDisabled:
+  <OnDisabled>k__BackingField:
     m_PersistentCalls:
       m_Calls: []
   smoothSelectedness: 1
@@ -1040,7 +1043,7 @@ MonoBehaviour:
         name: Set Targets Active/Inactive
         invert: 0
         targets:
-        - {fileID: 1494106019810454970}
+        - {fileID: 0}
 --- !u!82 &1910809987695916102
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1581,104 +1584,4 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
   m_PrefabInstance: {fileID: 5008003114755669068}
-  m_PrefabAsset: {fileID: 0}
---- !u!1001 &6458936354994985296
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 8829903862454882072}
-    m_Modifications:
-    - target: {fileID: 1132637073067987526, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.1303
-      objectReference: {fileID: 0}
-    - target: {fileID: 1132637073067987526, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.0343
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_RootOrder
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.0039
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5557127370827511018, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_Name
-      value: UIBackplateToggleQuad
-      objectReference: {fileID: 0}
-    - target: {fileID: 5557127370827511018, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6077720326341080553, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_Name
-      value: UX.Button.BackplateToggleQuad
-      objectReference: {fileID: 0}
-    - target: {fileID: 9102658290673352242, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 13e97f0307ba0be4ab4e19d00e2f921e, type: 2}
-    m_RemovedComponents:
-    - {fileID: 8125166150531609143, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-  m_SourcePrefab: {fileID: 100100000, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
---- !u!1 &1494106019810454970 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5557127370827511018, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-  m_PrefabInstance: {fileID: 6458936354994985296}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1290675915836177998 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5209440517997471518, guid: e3ee2968344c0ee41b950a4d2ab94b4c, type: 3}
-  m_PrefabInstance: {fileID: 6458936354994985296}
   m_PrefabAsset: {fileID: 0}
