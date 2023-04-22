@@ -66,7 +66,7 @@ public class MapController : MRTKBaseInteractable
 
     [SerializeField] private GameObject markerPrefab;
     [SerializeField] private GameObject compassMarkerPrefab;
-    [SerializeField] private float markerEditSensitivity = 0.033f;
+    [SerializeField] private float markerEditSensitivity = 0.000033f;
 
     // Each marker is a (gpsCoords, mapMarkerObj, compassMarkerObj, mapRT, compassRT) 5-tuple
     private Dictionary<GameObject, (Vector2, GameObject, GameObject, RectTransform, RectTransform)> _markers;
@@ -230,7 +230,7 @@ public class MapController : MRTKBaseInteractable
                         case MapActionMode.SelectMarker:
                             var newPos = _newMarkerOnMap.transform.position;
                             newPos.z -= 0.02f;
-                            newPos.y -= 0.033f;
+                            newPos.y -= 0.02f;
                             _actionButtons.transform.position = newPos;
                             break;
                     }

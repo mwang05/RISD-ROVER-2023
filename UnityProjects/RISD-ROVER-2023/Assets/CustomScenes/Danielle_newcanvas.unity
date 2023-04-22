@@ -13216,7 +13216,7 @@ MonoBehaviour:
   _maxZoom: 2
   markerPrefab: {fileID: 626432053551635841, guid: a1bfc2edf13e50848bf4403709bce93c, type: 3}
   compassMarkerPrefab: {fileID: 626432053551635841, guid: a1bfc2edf13e50848bf4403709bce93c, type: 3}
-  markerEditSensitivity: 0.033
+  markerEditSensitivity: 0.000033
   distanceFromUser: 0.48
 --- !u!65 &4095427112154879014
 BoxCollider:
