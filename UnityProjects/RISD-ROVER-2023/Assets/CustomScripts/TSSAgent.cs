@@ -3,44 +3,42 @@ using System.Collections.Generic;
 using UnityEngine;
 using TSS;
 
-public class ConnScript : MonoBehaviour
+public class TSSAgent : MonoBehaviour
 {
     TSSConnection tss;
-    string tssUri;
-
+    string tssUri = "ws://10.1.77.194";
+    private bool isConnecting = false;
+    private bool connected = false;
     int msgCount = 0;
 
-    TMPro.TMP_Text gpsMsgBox;
-    TMPro.TMP_Text imuMsgBox;
-    TMPro.TMP_Text evaMsgBox;
-
-    TMPro.TMP_InputField inputField;
+    private GameObject connectMsg;
 
     // Start is called before the first frame update
     async void Start()
     {
         tss = new TSSConnection();
-        inputField = GameObject.Find("Socket URI Input Field").GetComponent<TMPro.TMP_InputField>();
-
-        gpsMsgBox = GameObject.Find("GPS Msg Box").GetComponent<TMPro.TMP_Text>();
-        imuMsgBox = GameObject.Find("IMU Msg Box").GetComponent<TMPro.TMP_Text>();
-        evaMsgBox = GameObject.Find("EVA Msg Box").GetComponent<TMPro.TMP_Text>();
-
+        connectMsg = GameObject.Find("Connecting");
+        isConnecting = true;
+        Connect();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Updates the websocket once per frame
-        tss.Update();
 
+        // Updates the websocket once per frame
+        if (connected) tss.Update();
+        else if (!isConnecting)
+        {
+            isConnecting = true;
+            connectMsg.SetActive(true);
+            Connect();
+        }
     }
 
     public async void Connect()
     {
-        tssUri = inputField.text;
         var connecting = tss.ConnectToURI(tssUri);
-        Debug.Log("Connecting to " + tssUri);
         // Create a function that takes asing TSSMsg parameter and returns void. For example:
         // public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg) { ... }
         // Then just subscribe to the OnTSSTelemetryMsg
@@ -49,31 +47,17 @@ public class ConnScript : MonoBehaviour
             msgCount++;
             Debug.Log("Message #" + msgCount + "\nMessage:\n " + JsonUtility.ToJson(telemMsg, prettyPrint: true));
 
+            // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
             if (telemMsg.GPS.Count > 0)
             {
-                gpsMsgBox.text = "GPS Msg: " + JsonUtility.ToJson(telemMsg.GPS[0], prettyPrint: true);
-            }
-            else
-            {
-                gpsMsgBox.text = "No GPS Msg received";
             }
 
             if (telemMsg.IMU.Count > 0)
             {
-                imuMsgBox.text = "IMU Msg: " + JsonUtility.ToJson(telemMsg.IMU[0], prettyPrint: true);
-            }
-            else
-            {
-                imuMsgBox.text = "No IMU Msg received";
             }
 
             if (telemMsg.EVA.Count > 0)
             {
-                evaMsgBox.text = "EVA Msg: " + JsonUtility.ToJson(telemMsg.EVA[0], prettyPrint: true);
-            }
-            else
-            {
-                evaMsgBox.text = "No EVA Msg received";
             }
         };
 
@@ -82,16 +66,23 @@ public class ConnScript : MonoBehaviour
         tss.OnOpen += () =>
         {
             Debug.Log("Websocket connection opened");
+            connected = true;
+            isConnecting = false;
+            connectMsg.SetActive(false);
         };
 
         tss.OnError += (string e) =>
         {
             Debug.Log("Websocket error occured: " + e);
+            connected = false;
+            isConnecting = false;
         };
 
         tss.OnClose += (e) =>
         {
             Debug.Log("Websocket closed with code: " + e);
+            connected = false;
+            isConnecting = false;
         };
 
         await connecting;
