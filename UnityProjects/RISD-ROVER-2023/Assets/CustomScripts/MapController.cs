@@ -95,9 +95,6 @@ public class MapController : MRTKBaseInteractable
     [SerializeField] private GameObject waypointPrefab;
     private Transform waypointsTF;
 
-    // Map follow
-    [SerializeField] private float distanceFromUser;
-    private Transform _canvasTf;
     private float _canvasScale;
     private float _canvasHalfWidth;
     private float _canvasHalfHeight;
@@ -129,7 +126,6 @@ public class MapController : MRTKBaseInteractable
         _lineRenderer.endWidth = 0.001f;
         _lineRenderer.numCornerVertices = 5;
         _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
-        _canvasTf = GameObject.Find("Canvas").GetComponent<RectTransform>().transform;
         _panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
         _canvasScale = GameObject.Find("Canvas").transform.localScale.x;
         Rect canvasR = _canvasRT.rect;
@@ -152,7 +148,6 @@ public class MapController : MRTKBaseInteractable
                 break;
         }
         if (_markers.Count > 0) UpdateMarkers();
-        MapFollow();
         if (_navigationOn) Navigate();
         if (recordingWaypoints) RecordWaypoints();
         else ReplayWaypoints();
@@ -620,19 +615,6 @@ public class MapController : MRTKBaseInteractable
             rtCompass.offsetMax = rtCompass.offsetMin;
         }
 	}
-
-    private void MapFollow()
-    {
-        Transform cameraTf = _mainCamera.transform;
-        Vector3 userPos = cameraTf.position;
-        Vector3 userLook = cameraTf.forward;
-
-        userLook.y = 0;
-        userLook = Vector3.Normalize(userLook);
-
-        _canvasTf.position = userPos + distanceFromUser * userLook;
-        _canvasTf.rotation = cameraTf.rotation;
-    }
 
     public void ToggleWaypointAction()
     {

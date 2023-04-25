@@ -18,8 +18,7 @@ public class TSSAgent : MonoBehaviour
     {
         tss = new TSSConnection();
         connectMsg = GameObject.Find("Connecting");
-        isConnecting = true;
-        Connect();
+        // Connect();
     }
 
     // Update is called once per frame
@@ -27,17 +26,18 @@ public class TSSAgent : MonoBehaviour
     {
 
         // Updates the websocket once per frame
-        if (connected) tss.Update();
-        else if (!isConnecting)
-        {
-            isConnecting = true;
-            connectMsg.SetActive(true);
-            Connect();
-        }
+        // if (connected) tss.Update();
+        // else if (!isConnecting)
+        // {
+        //     isConnecting = true;
+        //     connectMsg.SetActive(true);
+        //     Connect();
+        // }
     }
 
     public async void Connect()
     {
+        isConnecting = true;
         var connecting = tss.ConnectToURI(tssUri);
         // Create a function that takes asing TSSMsg parameter and returns void. For example:
         // public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg) { ... }
