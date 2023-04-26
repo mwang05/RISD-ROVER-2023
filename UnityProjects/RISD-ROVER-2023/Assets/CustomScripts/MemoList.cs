@@ -73,8 +73,12 @@ public class MemoList : VirtualizedScrollRectList
                         var currPlayingTf = poolDict[_currPlayingIdx].transform;
                         var currPlayingBtn = currPlayingTf.Find("Play Button").gameObject.GetComponent<Button>();
                         var currPlayingPlayLen = currPlayingTf.Find("TimeL").gameObject.GetComponent<TextMeshProUGUI>();
+						var currPlayingPbarRT = currPlayingTf.Find(
+												"Progress Bar").gameObject.transform.Find(
+												"Progress Bar FG").gameObject.GetComponent<RectTransform>();
 
                         currPlayingBtn.image.sprite = memoPlaySprite;
+						currPlayingPbarRT.sizeDelta = new Vector2 (0.0f, currPlayingPbarRT.sizeDelta.y);
                         currPlayingPlayLen.text = "00:00";
                     }
 
@@ -101,10 +105,12 @@ public class MemoList : VirtualizedScrollRectList
                     if (_currPlayingIdx >= visibleStart && _currPlayingIdx < visibleEnd)
                     {
                         var currPlayingTf = poolDict[_currPlayingIdx].transform;
-                        // var currPlayingBtn = currPlayingTf.Find("Play Button").gameObject.GetComponent<Button>();
                         var currPlayingPlayLen = currPlayingTf.Find("TimeL").gameObject.GetComponent<TextMeshProUGUI>();
+						var currPlayingPbarRT = currPlayingTf.Find(
+												"Progress Bar").gameObject.transform.Find(
+												"Progress Bar FG").gameObject.GetComponent<RectTransform>();
 
-                        // currPlayingBtn.image.sprite = memoPlaySprite;
+						currPlayingPbarRT.sizeDelta = new Vector2 (0.0f, currPlayingPbarRT.sizeDelta.y);
                         currPlayingPlayLen.text = "00:00";
                     }
 
@@ -130,9 +136,11 @@ public class MemoList : VirtualizedScrollRectList
     {
         Debug.Log("GameObject " + go.name + " is now visible at index " + index);
 
-        // // TODO: Are there better ways?
         var playBut = go.transform.Find("Play Button").gameObject.GetComponent<Button>();
         // var trashBut = go.transform.Find("Trash Button").gameObject.GetComponent<Button>();
+		var pbarRT = go.transform.Find(
+					 	"Progress Bar").gameObject.transform.Find(
+						"Progress Bar FG").gameObject.GetComponent<RectTransform>();
 
         var recName = go.transform.Find("Record Name").gameObject.GetComponent<TextMeshProUGUI>();
         recName.text = _recos[index].name;
@@ -148,6 +156,9 @@ public class MemoList : VirtualizedScrollRectList
 			// Debug.Log(_audioSource.time);
             var playLen = ConvertSecsToMinSecs(_audioSource.time);
             timeL.text = string.Format("{0:00}:{1:00}", playLen.minutes, playLen.seconds);
+			pbarRT.sizeDelta = new Vector2 (
+				_audioSource.time/_audioSource.clip.length * 54.0f,
+				pbarRT.sizeDelta.y);
 
             playBut.image.sprite = (_currState == VoiceMemoState.MemoPlaying)
                                  ? memoPauseSprite
@@ -156,6 +167,7 @@ public class MemoList : VirtualizedScrollRectList
         else
         {
             timeL.text = "00:00";
+			pbarRT.sizeDelta = new Vector2 (0.0f, pbarRT.sizeDelta.y);
             playBut.image.sprite = memoPlaySprite;
         }
 
@@ -211,16 +223,25 @@ public class MemoList : VirtualizedScrollRectList
                 // TODO: update PlayTimeDisplay
                 if (_currPlayingIdx >= visibleStart && _currPlayingIdx < visibleEnd)
                 {
+					// TODO: This needs optimization
                     var currPlayingTf = poolDict[_currPlayingIdx].transform;
                     var currPlayingPlayLen = currPlayingTf.Find("TimeL").gameObject.GetComponent<TextMeshProUGUI>();
+					var currPlayingPbarRT = currPlayingTf.Find(
+												"Progress Bar").gameObject.transform.Find(
+												"Progress Bar FG").gameObject.GetComponent<RectTransform>();
 
 					if (_audioSource.isPlaying)
 					{
 						var playLen = ConvertSecsToMinSecs(_audioSource.time);
         				currPlayingPlayLen.text = string.Format("{0:00}:{1:00}", playLen.minutes, playLen.seconds);
+						// TODO: get max width programatically
+						currPlayingPbarRT.sizeDelta = new Vector2 (
+							_audioSource.time/_audioSource.clip.length * 54.0f,
+							currPlayingPbarRT.sizeDelta.y);
 					}
 					else
 					{
+						currPlayingPbarRT.sizeDelta = new Vector2 (0.0f, currPlayingPbarRT.sizeDelta.y);
 					    currPlayingPlayLen.text = "00:00";
 						_currPlayingIdx = -1;
 						_currState = VoiceMemoState.MemoIdle;
@@ -257,8 +278,12 @@ public class MemoList : VirtualizedScrollRectList
                     var currPlayingTf = poolDict[_currPlayingIdx].transform;
                     var currPlayingBtn = currPlayingTf.Find("Play Button").gameObject.GetComponent<Button>();
                     var currPlayingPlayLen = currPlayingTf.Find("TimeL").gameObject.GetComponent<TextMeshProUGUI>();
+					var currPlayingPbarRT = currPlayingTf.Find(
+												"Progress Bar").gameObject.transform.Find(
+												"Progress Bar FG").gameObject.GetComponent<RectTransform>();
 
                     currPlayingBtn.image.sprite = memoPlaySprite;
+					currPlayingPbarRT.sizeDelta = new Vector2 (0.0f, currPlayingPbarRT.sizeDelta.y);
                     currPlayingPlayLen.text = "00:00";
                 }
                 _currPlayingIdx = -1;
