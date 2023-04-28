@@ -12,7 +12,7 @@ public class CanvasFollow : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _canvasTf = GameObject.Find("Canvas").GetComponent<RectTransform>().transform;
+        _canvasTf = GetComponent<RectTransform>().transform;
         _mainCamera = Camera.main;
     }
 
