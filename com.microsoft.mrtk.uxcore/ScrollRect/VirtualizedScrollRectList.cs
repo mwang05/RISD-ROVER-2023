@@ -31,7 +31,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
     [AddComponentMenu("MRTK/UX/Virtualized Scroll Rect List")]
     public class VirtualizedScrollRectList : MonoBehaviour
     {
-        #region Inspector and Private Fields
+        #region Inspector and protected Fields
 
         /// <summary>
         /// The direction the cell layout should flow in, top to bottom, or
@@ -55,61 +55,61 @@ namespace Microsoft.MixedReality.Toolkit.UX
         [Header("Objects")]
         [Tooltip("The pool of list item objects will be composed of this Prefab.")]
         [SerializeField]
-        private GameObject prefab;
+        protected GameObject prefab;
 
         [Tooltip("The ScrollRect used to display this list. If unspecified, VirtualizedScrollRectList will look for a ScrollRect on the current GameObject.")]
         [SerializeField]
-        private ScrollRect scrollRect;
+        protected ScrollRect scrollRect;
 
         // Header Layout
 
         [Header("Layout")]
         [Tooltip("Should the layout cells scroll horizontally on the X axis, or vertically on the Y axis?")]
         [SerializeField]
-        private Layout layoutDirection = Layout.Vertical;
+        protected Layout layoutDirection = Layout.Vertical;
 
         [Tooltip("If using a Vertical layout, this represents the number of Columns for the layout. When using Horizontal, this represents Rows.")]
         [SerializeField]
-        private int layoutRowsOrColumns = 1;
+        protected int layoutRowsOrColumns = 1;
 
         [Tooltip("(Optional) The size of each layout cell. If an axis is 0, VirualizedList will pull this dimension directly from the prefab's RectTransform.")]
         [SerializeField]
-        private Vector2 cellSize;
+        protected Vector2 cellSize;
 
         [Tooltip("This is the spacing between each layout cell in local units.")]
         [SerializeField]
-        private float gutter;
+        protected float gutter;
 
         [Tooltip("This is the spacing between the area where the layout cells are, and the boundaries of the ScrollRect's Content area.")]
         [SerializeField]
-        private float margin;
+        protected float margin;
 
         [Tooltip("When scrolling to the end of the list, it can be nice to show some empty space to indicate the end of the list. This is in local units.")]
         [SerializeField]
-        private float trailingSpace;
+        protected float trailingSpace;
 
         // Header State
 
         [Header("State")]
         [Tooltip("This is mostly for debug and inspection. Item Count should be driven by using SetItemCount in the API.")]
         [SerializeField]
-        private int itemCount = 10;
+        protected int itemCount = 10;
 
-        private float scroll = 0;
-        private float requestScroll;
+        protected float scroll = 0;
+        protected float requestScroll;
 
-        private int screenCount;
-        private float viewSize;
-        private float contentStart;
-        private float layoutPrefabSize;
-        private bool initialized = false;
+        protected int screenCount;
+        protected float viewSize;
+        protected float contentStart;
+        protected float layoutPrefabSize;
+        protected bool initialized = false;
 
-        private int visibleStart;
-        private int visibleEnd;
-        private bool visibleValid;
+        protected int visibleStart;
+        protected int visibleEnd;
+        protected bool visibleValid;
 
-        private Queue<GameObject> pool = new Queue<GameObject>();
-        private Dictionary<int, GameObject> poolDict = new Dictionary<int, GameObject>();
+        protected Queue<GameObject> pool = new Queue<GameObject>();
+        protected Dictionary<int, GameObject> poolDict = new Dictionary<int, GameObject>();
 
         #endregion
 
@@ -198,7 +198,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
 
         #endregion
 
-        #region Private Methods
+        #region protected Methods
 
         /// <summary>
         /// Given an index, this calculates the position of the associated
@@ -212,7 +212,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
         /// <returns>
         /// A ScrollRect relative location for the layout cell.
         /// </returns>
-        private Vector3 ItemLocation(int index) => layoutDirection == Layout.Vertical
+        protected Vector3 ItemLocation(int index) => layoutDirection == Layout.Vertical
             ? new Vector3(
                 scrollRect.content.rect.xMin + (margin + (cellSize.x + gutter) * (index % layoutRowsOrColumns)),
                 contentStart - (margin + (index / layoutRowsOrColumns) * layoutPrefabSize),
@@ -235,7 +235,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
         /// A scroll index value representing the itemCount index at the
         /// position. Not bounded to the 0-itemCount range at all.
         /// </returns>
-        private float PosToScroll(float pos) => layoutDirection == Layout.Vertical
+        protected float PosToScroll(float pos) => layoutDirection == Layout.Vertical
             ? ((pos - (margin - gutter)) / layoutPrefabSize) * layoutRowsOrColumns
             : ((-pos - (margin - gutter)) / layoutPrefabSize) * layoutRowsOrColumns;
 
@@ -251,11 +251,11 @@ namespace Microsoft.MixedReality.Toolkit.UX
         /// A position on the ScrollRect viewport, this value matches the axis
         /// indicated by layoutDirection.
         /// </returns>
-        private float ScrollToPos(float scroll) => layoutDirection == Layout.Vertical
+        protected float ScrollToPos(float scroll) => layoutDirection == Layout.Vertical
             ? (scroll * (layoutPrefabSize / layoutRowsOrColumns)) + (margin - gutter)
             : (-scroll * (layoutPrefabSize / layoutRowsOrColumns)) + (margin - gutter);
 
-        private void OnValidate()
+        protected void OnValidate()
         {
             // We only want to reset things if it has already been initialized,
             // we don't want to initialize it prematurely!
@@ -267,7 +267,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
             Initialize();
         }
 
-        private void Start()
+        protected void Start()
         {
             visibleValid = false;
             scrollRect = scrollRect == null ? GetComponent<ScrollRect>() : scrollRect;
@@ -278,14 +278,14 @@ namespace Microsoft.MixedReality.Toolkit.UX
             StartCoroutine(EndOfFrameInitialize());
         }
 
-        private IEnumerator EndOfFrameInitialize()
+        protected IEnumerator EndOfFrameInitialize()
         {
             yield return new WaitForEndOfFrame();
 
             Initialize();
         }
 
-        private void BakeCachedValues()
+        protected void BakeCachedValues()
         {
             RectTransform prefabRect = prefab.GetComponent<RectTransform>();
             if (cellSize.x == 0) cellSize.x = prefabRect.rect.width;
@@ -293,7 +293,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
             layoutPrefabSize = layoutDirection == Layout.Vertical ? cellSize.y + gutter : cellSize.x + gutter;
         }
 
-        private void Initialize()
+        protected void Initialize()
         {
             BakeCachedValues();
 
@@ -333,7 +333,17 @@ namespace Microsoft.MixedReality.Toolkit.UX
             UpdateScrollView(requestScroll);
         }
 
-        private void InitializePool()
+		virtual protected void InstantiatePrefabs()
+		{
+            int poolSize = screenCount + layoutRowsOrColumns;
+            for (int i = 0; i < poolSize; i++)
+            {
+                GameObject go = Instantiate(prefab, ItemLocation(-(i + 1)), Quaternion.identity, scrollRect.content);
+                pool.Enqueue(go);
+            }
+		}
+
+        protected void InitializePool()
         {
             // Support resetting everything from OnValidate
             foreach (int i in poolDict.Keys.ToArray())
@@ -349,15 +359,10 @@ namespace Microsoft.MixedReality.Toolkit.UX
             visibleEnd = -1;
 
             // Create the pool of prefabs
-            int poolSize = screenCount + layoutRowsOrColumns;
-            for (int i = 0; i < poolSize; i++)
-            {
-                GameObject go = Instantiate(prefab, ItemLocation(-(i + 1)), Quaternion.identity, scrollRect.content);
-                pool.Enqueue(go);
-            }
+			InstantiatePrefabs();
         }
 
-        private void UpdateScrollView(float newScroll)
+        protected void UpdateScrollView(float newScroll)
         {
             newScroll = Mathf.Clamp(newScroll, 0, MaxScroll);
 
@@ -369,7 +374,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
             UpdateScroll(newScroll);
         }
 
-        private void UpdateScroll(float newScroll)
+        protected void UpdateScroll(float newScroll)
         {
             if ((scroll == newScroll && visibleValid == true) || initialized == false) { return; }
             scroll = newScroll;
@@ -406,7 +411,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
             visibleEnd = newVisibleEnd;
         }
 
-        private void MakeInvisible(int i)
+        protected void MakeInvisible(int i)
         {
             if (TryGetVisible(i, out GameObject go) == false) { return; }
 
@@ -415,7 +420,7 @@ namespace Microsoft.MixedReality.Toolkit.UX
             pool.Enqueue(go);
         }
 
-        private void MakeVisible(int i)
+        protected void MakeVisible(int i)
         {
             GameObject go = pool.Dequeue();
             go.transform.localPosition = ItemLocation(i);
