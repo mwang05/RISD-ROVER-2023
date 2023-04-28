@@ -76,3 +76,5 @@ scripts/test/out/
 [Uu]serSettings/
 UWP/
 UnityProjects/RISD-ROVER-2023/.idea/*
+
+com.microsoft.mrtk.standardassets/Fonts/*
