@@ -50,7 +50,7 @@ public class MapController : MRTKBaseInteractable
     {
         Waypoint,
         Obstacle,
-        Marker,
+        POI,
         Rover
     };
     private Vector2 _lastTouchPosition;
@@ -64,12 +64,14 @@ public class MapController : MRTKBaseInteractable
     }
     private Vector2 lastTouchPosition;
 
-    [SerializeField] private GameObject markerPrefab;
+    private Dictionary<MarkerType, bool> showMarker;
+
+    [SerializeField] private GameObject POIPrefab, obstaclePrefab, roverPrefab;
     [SerializeField] private GameObject compassMarkerPrefab;
     [SerializeField] private float markerEditSensitivity = 0.000033f;
 
-    // Each marker is a (gpsCoords, mapMarkerObj, compassMarkerObj, mapRT, compassRT) 5-tuple
-    private Dictionary<GameObject, (Vector2, GameObject, GameObject, RectTransform, RectTransform)> _markers;
+    // Each marker is a (type, gpsCoords, mapMarkerObj, compassMarkerObj, mapRT, compassRT) 5-tuple
+    private Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)> _markers;
 
     private RectTransform _compassRT, _compassMarkersRT;
     private GameObject _newMarkerOnMap, _newMarkerOnCompass;
@@ -78,7 +80,7 @@ public class MapController : MRTKBaseInteractable
     private GameObject _markersObj;
     private float _buttonPressedTime;
     private MarkerType _selectedMarkerType;
-    private FontIconSelector _waypointIcon, _obstacleIcon, _markerIcon, _roverIcon;
+    private GameObject _obstacleDisabled, _POIDisabled, _roverDisabled;
     private GameObject _actionButtons;
     private RectTransform _actionButtonsRT;
     private MapActionMode _actionMode;
@@ -105,7 +107,7 @@ public class MapController : MRTKBaseInteractable
         _mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
         _canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
         _meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
-        _markers = new Dictionary<GameObject, (Vector2, GameObject, GameObject, RectTransform, RectTransform)>();
+        _markers = new Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)>();
         _compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
         _compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
         _markersObj = GameObject.Find("Markers");
@@ -113,10 +115,14 @@ public class MapController : MRTKBaseInteractable
         var panelSize = GameObject.Find("Map Panel").GetComponent<BoxCollider>().size;
         _panelXBound = panelSize.x / 2;
         _panelYBound = panelSize.y / 2;
-        // _waypointIcon = GameObject.Find("WaypointIcon").GetComponent<FontIconSelector>();
-        // _obstacleIcon = GameObject.Find("ObstacleIcon").GetComponent<FontIconSelector>();
-        // _markerIcon = GameObject.Find("MarkerIcon").GetComponent<FontIconSelector>();
-        // _roverIcon = GameObject.Find("RoverIcon").GetComponent<FontIconSelector>();
+        // _waypointDisabled = GameObject.Find("Waypoint Disabled");
+        _roverDisabled = GameObject.Find("Rover Disabled");
+        _obstacleDisabled = GameObject.Find("Obstacle Disabled");
+        _POIDisabled = GameObject.Find("POI Disabled");
+        // _waypointDisabled.SetActive(false);
+        _roverDisabled.SetActive(false);
+        _obstacleDisabled.SetActive(false);
+        _POIDisabled.SetActive(false);
         _actionButtons = GameObject.Find("Marker Action Buttons");
         _actionButtonsRT = _actionButtons.GetComponent<RectTransform>();
         _actionButtons.SetActive(false);
@@ -134,6 +140,13 @@ public class MapController : MRTKBaseInteractable
         _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
         waypoints = new List<(Vector2, GameObject, RectTransform)>();
         waypointsTF = GameObject.Find("Waypoints").GetComponent<Transform>();
+        showMarker = new Dictionary<MarkerType, bool>
+        {
+            { MarkerType.Obstacle, true },
+            { MarkerType.Rover, true },
+            { MarkerType.Waypoint, true },
+            { MarkerType.POI, true }
+        };
     }
 
     void Update()
@@ -225,13 +238,27 @@ public class MapController : MRTKBaseInteractable
                         // Marker
                         if (_actionMode == MapActionMode.AddMarker)
                         {
-                            _newMarkerOnMap = Instantiate(markerPrefab, _markersTF);
-                            _newMarkerOnCompass = Instantiate(compassMarkerPrefab, _compassMarkersRT);
+                            switch (_selectedMarkerType)
+                            {
+                                case MarkerType.Obstacle:
+                                    _newMarkerOnMap = Instantiate(obstaclePrefab, _markersTF);
+                                    _newMarkerOnCompass = Instantiate(obstaclePrefab, _compassMarkersRT);
+                                    break;
+                                case MarkerType.Rover:
+                                    _newMarkerOnMap = Instantiate(roverPrefab, _markersTF);
+                                    _newMarkerOnCompass = Instantiate(roverPrefab, _compassMarkersRT);
+                                    break;
+                                default:
+                                    _newMarkerOnMap = Instantiate(POIPrefab, _markersTF);
+                                    _newMarkerOnCompass = Instantiate(POIPrefab, _compassMarkersRT);
+                                    break;
+                            }
                             _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
                             _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
                             _markers.Add(_newMarkerOnMap,
-								(MapPosToGPS(firstPosition),
-                                //(MapToWorldPos(firstPosition),
+								(_selectedMarkerType,
+                                    MapPosToGPS(firstPosition),
+                                    //(MapToWorldPos(firstPosition),
                                     _newMarkerOnMap,
                                     _newMarkerOnCompass,
                                     _newMarkerOnMap.GetComponent<RectTransform>(),
@@ -244,7 +271,7 @@ public class MapController : MRTKBaseInteractable
                             float minDist = markerEditSensitivity + 1;
                             foreach (var kvp in _markers)
                             {
-                                float dist = (kvp.Value.Item1 - MapPosToGPS(firstPosition)).magnitude;
+                                float dist = (kvp.Value.Item2 - MapPosToGPS(firstPosition)).magnitude;
                                 if (dist < minDist)
                                 {
                                     minDist = dist;
@@ -277,7 +304,7 @@ public class MapController : MRTKBaseInteractable
                             break;
                         case MapActionMode.EditMarker:
                             var markerItem = _markers[_newMarkerOnMap];
-                            markerItem.Item1 = MapPosToGPS(localTouchPosition);
+                            markerItem.Item2 = MapPosToGPS(localTouchPosition);
                             _markers[_newMarkerOnMap] = markerItem;
                             break;
                         case MapActionMode.SelectMarker:
@@ -422,9 +449,9 @@ public class MapController : MRTKBaseInteractable
         _selectedMarkerType = MarkerType.Obstacle;
         _buttonPressedTime = Time.time;
     }
-    public void OnMarkerSelectEnter()
+    public void OnPOISelectEnter()
     {
-        _selectedMarkerType = MarkerType.Marker;
+        _selectedMarkerType = MarkerType.POI;
         _buttonPressedTime = Time.time;
     }
     public void OnRoverSelectEnter()
@@ -464,19 +491,15 @@ public class MapController : MRTKBaseInteractable
         Vector3 pos = _panelTf.position;
         Quaternion rot = _panelTf.rotation;
 
-        pos += 0.09f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
-        pos += 0.07f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
-        pos += 0.01f * (rot * Vector3.back);
+        pos += 0.088f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
+        pos += 0.070f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
+        pos += 0.015f * (rot * Vector3.back);
 
         return pos;
     }
 
     private void Navigate()
     {
-        // _lineRenderer.SetPosition(0, _curloc.GetComponent<RectTransform>().localPosition);
-        // _lineRenderer.SetPosition(1, _navigateTo.GetComponent<RectTransform>().localPosition);
-        // Debug.Log(_curloc.transform.localPosition);
-        // Debug.Log(_navigateTo.transform.localPosition);
         Vector3 mapPos = _panelTf.position;
         _lineRenderer.SetPosition(0, OffsetToPos(_curlocRT.offsetMin));
         _lineRenderer.SetPosition(1, OffsetToPos(_navigateTo.offsetMin));
@@ -491,26 +514,25 @@ public class MapController : MRTKBaseInteractable
         }
         else
         {
-            // switch (_selectedMarkerType)
-            // {
-            //     case MarkerType.Waypoint:
-            //         _waypointIcon.CurrentIconName =
-            //             _waypointIcon.CurrentIconName == "Icon 30" ? "Icon 10" : "Icon 30";
-            //         break;
-            //     case MarkerType.Obstacle:
-            //         _obstacleIcon.CurrentIconName =
-            //             _obstacleIcon.CurrentIconName == "Icon 15" ? "Icon 10" : "Icon 15";
-            //         break;
-            //     case MarkerType.Marker:
-            //         _markerIcon.CurrentIconName =
-            //             _markerIcon.CurrentIconName == "Icon 14" ? "Icon 10" : "Icon 14";
-            //         break;
-            //     case MarkerType.Rover:
-            //         _roverIcon.CurrentIconName =
-            //             _roverIcon.CurrentIconName == "Icon 54" ? "Icon 10" : "Icon 54";
-            //         break;
-            // }
-            _markersObj.SetActive(!_markersObj.activeSelf);
+            switch (_selectedMarkerType)
+            {
+                // case MarkerType.Waypoint:
+                //     _waypointDisabled.SetActive(!_waypointDisabled.activeSelf);
+                //     showMarker[MarkerType.Waypoint] = !_waypointDisabled.activeSelf;
+                //     break;
+                case MarkerType.Obstacle:
+                    _obstacleDisabled.SetActive(!_obstacleDisabled.activeSelf);
+                    showMarker[MarkerType.Obstacle] = !_obstacleDisabled.activeSelf;
+                    break;
+                case MarkerType.POI:
+                    _POIDisabled.SetActive(!_POIDisabled.activeSelf);
+                    showMarker[MarkerType.POI] = !_POIDisabled.activeSelf;
+                    break;
+                case MarkerType.Rover:
+                    _roverDisabled.SetActive(!_roverDisabled.activeSelf);
+                    showMarker[MarkerType.Rover] = !_roverDisabled.activeSelf;
+                    break;
+            }
         }
     }
 
@@ -592,9 +614,15 @@ public class MapController : MRTKBaseInteractable
         foreach(var kvp in _markers)
         {
             // Vector3 posWorldspace = item.Item1;    // marker pos in world space
-            Vector2 markerGPS = kvp.Value.Item1;    // marker's GPS coords
-            RectTransform rtMap = kvp.Value.Item4;
-            RectTransform rtCompass = kvp.Value.Item5;
+            GameObject obj = kvp.Key;
+            MarkerType type = kvp.Value.Item1;
+
+            obj.SetActive(showMarker[type]);
+            if (!showMarker[type]) continue;
+
+            Vector2 markerGPS = kvp.Value.Item2;    // marker's GPS coords
+            RectTransform rtMap = kvp.Value.Item5;
+            RectTransform rtCompass = kvp.Value.Item6;
 
             // Translate (offset) markers relative to map RT
             // Note: pos gives offsets in rotated MAP SPACE,
