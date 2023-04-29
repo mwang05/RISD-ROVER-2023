@@ -101,6 +101,9 @@ public class MapController : MRTKBaseInteractable
     private float _canvasHalfWidth;
     private float _canvasHalfHeight;
 
+    // Voice
+    private GameObject voiceMemoObj;
+
     void Start()
     {
         _mainCamera = Camera.main;
@@ -147,6 +150,8 @@ public class MapController : MRTKBaseInteractable
             { MarkerType.Waypoint, true },
             { MarkerType.POI, true }
         };
+        voiceMemoObj = GameObject.Find("Voice Memo");
+        voiceMemoObj.SetActive(false);
     }
 
     void Update()
@@ -289,6 +294,9 @@ public class MapController : MRTKBaseInteractable
                             {
                                 _newMarkerOnMap = null;
                                 _newMarkerOnCompass = null;
+                                if (voiceMemoObj.activeSelf) {
+                                    voiceMemoObj.SetActive(false);
+                                }
                             }
                         }
                     }
@@ -657,4 +665,12 @@ public class MapController : MRTKBaseInteractable
         if (recordingWaypoints) waypoints.Clear();
         else _lineRenderer.positionCount = waypoints.Count + 1;
     }
+
+    public void VoiceMemoOnclick()
+    {
+        _actionMode = MapActionMode.Pan;
+        _actionButtons.SetActive(false);
+        voiceMemoObj.SetActive(true);
+    }
 }
+
