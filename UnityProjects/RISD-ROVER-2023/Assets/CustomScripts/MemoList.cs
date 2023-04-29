@@ -46,6 +46,7 @@ public class MemoList : VirtualizedScrollRectList
     private TextMeshProUGUI _recordTimeTMP;
 
     private Button _recordBut;
+    private Image _recordBtnImage;
     public Sprite recordOnSprite, recordOffSprite;
     public Sprite memoPlaySprite, memoPauseSprite;
 
@@ -233,9 +234,11 @@ public class MemoList : VirtualizedScrollRectList
         OnInvisible = OnInvisibleCallback;
         SetItemCount(0);
 
-        _recordBut = GameObject.Find("Record Button").GetComponent<Button>();
+        // _recordBut = GameObject.Find("Record Button").GetComponent<Button>();
         _recordTimeTMP = GameObject.Find("Record Duration").GetComponent<TextMeshProUGUI>();
-        _recordBut.image.sprite = recordOffSprite;
+        // _recordBut.image.sprite = recordOffSprite;
+        _recordBtnImage = GameObject.Find("Record Button Image").GetComponent<Image>();
+        _recordBtnImage.sprite = recordOffSprite;
 
         _audioSource = GetComponent<AudioSource>();
     }
@@ -378,14 +381,16 @@ public class MemoList : VirtualizedScrollRectList
         _currState = VoiceMemoState.MemoIdle;
         _recordTime = 0.0f;
 
-		_recordBut.image.sprite = recordOffSprite;
+		// _recordBut.image.sprite = recordOffSprite;
+        _recordBtnImage.sprite = recordOffSprite;
     }
 
     private void StartVoiceMemo()
     {
         _currReco = Microphone.Start("", false, 600, 44100);  // cap 10 mins
         _currState = VoiceMemoState.MemoRecording;
-        _recordBut.image.sprite = recordOnSprite;
+        // _recordBut.image.sprite = recordOnSprite;
+        _recordBtnImage.sprite = recordOnSprite;
     }
 
     private AudioClip GetTrimmedAudioClip(AudioClip ac, string name)
