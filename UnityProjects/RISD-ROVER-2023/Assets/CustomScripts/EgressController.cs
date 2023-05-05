@@ -4,15 +4,10 @@ using UnityEngine;
 
 public class EgressController : MonoBehaviour
 {
-    // public struct UIA
-    // {
-    //     public 
-    // }
     private bool isTesting = false;
     public enum Test 
     {
         PrepareUIA, PurgeN2, O2Pressure, EMUwater, AirLock, EMUPressure, AirLockDepress
-       
     } 
 
     private Test currTest;
@@ -22,80 +17,47 @@ public class EgressController : MonoBehaviour
     private float startTime;
 
     private TMPro.TMP_Text messageText;
-    private TMPro.TMP_Text UIAText, N2Text, O2PressureText, EMUwaterText, AirLockText,EMUPressureText, AirLockDepressText;   
-    private GameObject message, Egress;
-    
+    private GameObject UIAText, N2Text, O2PressureText, EMUwaterText, AirLockText,EMUPressureText, AirLockDepressText;   
+    private GameObject UIAComplete, N2Complete, O2PressureComplete, EMUwaterComplete, AirLockComplete, EMUPressureComplete, AirLockDepressComplete;
+    private GameObject message, Egress, Nav;
+    private bool[] isCompleted = new bool[7];
 
     public void PerformTask(float s)
     {
-        if(Time.time - startTime > s)
+        if(Time.time - startTime > s / 10)
         {
             currStep++;
             startTime = Time.time;
         }
     }
 
-    public void PrepareUIA()
+    public void StartTest(int index)
     {
         isTesting = true;
-        currTest = Test.PrepareUIA;
+        currTest = (Test)index;
         currStep = 0;
         startTime = Time.time;
         message.SetActive(true);
     }
 
-    public void PurgeN2()
+    private void CompleteTest(Test t)
     {
-        isTesting = true;
-        currTest = Test.PurgeN2;
-        currStep = 0;
-        startTime = Time.time;
-        message.SetActive(true);
-    }
+        int index = (int)t;
+        isCompleted[index] = true;
+        bool allComplete = true;
 
-    public void O2Pressure()
-    {
-        isTesting = true;
-        currTest = Test.O2Pressure;
-        currStep = 0;
-        startTime = Time.time;
-        message.SetActive(true);
-    }
-
-    public void EMUwater()
-    {
-        isTesting = true;
-        currTest = Test.EMUwater;
-        currStep = 0;
-        startTime = Time.time;
-        message.SetActive(true);
-    }
-
-    public void AirLock()
-    {
-        isTesting = true;
-        currTest = Test.AirLock;
-        currStep = 0;
-        startTime = Time.time;
-        message.SetActive(true);
-    }
-
-    public void AirLockDepress()
-    {
-        isTesting = true;
-        currTest = Test.AirLockDepress;
-        currStep = 0;
-        startTime = Time.time;
-        message.SetActive(true);
-    }
-
-    public void EMUPressure()
-    {
-        isTesting = true;
-        currTest = Test.EMUPressure;
-        currStep = 0;
-        startTime = Time.time;
-        message.SetActive(true);
+        for(int i = 0; i < 7; i++) {
+            if (!isCompleted[i]) 
+            {
+                allComplete = false;
+                break;
+            }
+        }
+        
+        if (allComplete) {
+            Nav.SetActive(true);
+            gameObject.SetActive(false);
+        }
     }
 
     public void PerformTest()
@@ -120,7 +82,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        UIAText.color = new Color(0, 255, 0);
+                        UIAComplete.SetActive(true);
+                        UIAText.SetActive(false);
+                        CompleteTest(Test.PrepareUIA);
+                        // UIAText.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -155,7 +120,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        N2Text.color = new Color(0, 255, 0);
+                        N2Complete.SetActive(true);
+                        N2Text.SetActive(false);
+                        CompleteTest(Test.PurgeN2);
+                        // N2Text.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -178,7 +146,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        O2PressureText.color = new Color(0, 255, 0);
+                        O2PressureComplete.SetActive(true);
+                        O2PressureText.SetActive(false);
+                        CompleteTest(Test.O2Pressure);
+                        // O2PressureText.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -221,7 +192,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        EMUwaterText.color = new Color(0, 255, 0);
+                        EMUwaterComplete.SetActive(true);
+                        EMUwaterText.SetActive(false);
+                        CompleteTest(Test.EMUwater);
+                        // EMUwaterText.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -244,7 +218,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        AirLockText.color = new Color(0, 255, 0);
+                        AirLockComplete.SetActive(true);
+                        AirLockText.SetActive(false);
+                        CompleteTest(Test.AirLock);
+                        // AirLockText.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -267,7 +244,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        EMUPressureText.color = new Color(0, 255, 0);
+                        EMUPressureComplete.SetActive(true);
+                        EMUPressureText.SetActive(false);
+                        CompleteTest(Test.EMUPressure);
+                        // EMUPressureText.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -290,7 +270,10 @@ public class EgressController : MonoBehaviour
                     default:
                         message.SetActive(false);
                         isTesting = false;
-                        AirLockDepressText.color = new Color(0, 255, 0);
+                        AirLockDepressComplete.SetActive(true);
+                        AirLockDepressText.SetActive(false);
+                        CompleteTest(Test.AirLockDepress);
+                        // AirLockDepressText.color = new Color(0, 255, 0);
                         break;
                 }
                 break;
@@ -310,14 +293,34 @@ public class EgressController : MonoBehaviour
     {
         message = GameObject.Find("egress msg");
         messageText = GameObject.Find("egress msg text").GetComponent<TMPro.TMP_Text>();
-        UIAText = GameObject.Find("UIA Text").GetComponent<TMPro.TMP_Text>();
-        N2Text = GameObject.Find("N2 Text").GetComponent<TMPro.TMP_Text>();
-        O2PressureText = GameObject.Find("O2 Pressure Text").GetComponent<TMPro.TMP_Text>();
-        EMUwaterText = GameObject.Find("EMU water Text").GetComponent<TMPro.TMP_Text>();
-        AirLockText = GameObject.Find("Airlock Text").GetComponent<TMPro.TMP_Text>();
-        EMUPressureText = GameObject.Find("EMU Text").GetComponent<TMPro.TMP_Text>();
-        AirLockDepressText = GameObject.Find("Airlock Depressure Text").GetComponent<TMPro.TMP_Text>();
+        UIAText = GameObject.Find("UIA Text");
+        N2Text = GameObject.Find("N2 Text");
+        O2PressureText = GameObject.Find("O2 Pressure Text");
+        EMUwaterText = GameObject.Find("EMU water Text");
+        AirLockText = GameObject.Find("Airlock Text");
+        EMUPressureText = GameObject.Find("EMU Text");
+        AirLockDepressText = GameObject.Find("Airlock Depressure Text");
+        
+        UIAComplete = GameObject.Find("UIA Text g");
+        N2Complete = GameObject.Find("N2 Text g");
+        O2PressureComplete = GameObject.Find("O2 Pressure Text g");
+        EMUwaterComplete = GameObject.Find("EMU water Text g");
+        AirLockComplete = GameObject.Find("Airlock Text g");
+        EMUPressureComplete = GameObject.Find("EMU Text g");
+        AirLockDepressComplete = GameObject.Find("Airlock Depressure Text g");
+        
+        UIAComplete.SetActive(false);
+        N2Complete.SetActive(false);
+        O2PressureComplete.SetActive(false);
+        EMUwaterComplete.SetActive(false);
+        AirLockComplete.SetActive(false);
+        EMUPressureComplete.SetActive(false);
+        AirLockDepressComplete.SetActive(false);
+        // CompleteText.SetActive(false);
         message.SetActive(false);
+
+        Nav = GameObject.Find("Main Panel");
+        Nav.SetActive(false);
     }
 
     // Update is called once per frame
@@ -327,10 +330,5 @@ public class EgressController : MonoBehaviour
         {
             PerformTest();
         }
-
-        // else
-        // {
-        //     EndTest();
-        // }
     }
 }

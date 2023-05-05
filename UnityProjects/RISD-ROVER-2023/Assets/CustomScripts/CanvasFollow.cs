@@ -31,7 +31,7 @@ public class CanvasFollow : MonoBehaviour
         userLook.y = 0;
         userLook = Vector3.Normalize(userLook);
 
-        _canvasTf.position = userPos + distanceFromUser * userLook;
+        _canvasTf.position = userPos + distanceFromUser * userLook - cameraTf.up * 0.02f;
         _canvasTf.rotation = cameraTf.rotation;
     }
 }
