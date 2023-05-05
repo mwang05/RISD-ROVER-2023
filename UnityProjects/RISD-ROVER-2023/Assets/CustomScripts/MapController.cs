@@ -165,7 +165,7 @@ public class MapController : MRTKBaseInteractable
                 AlignMapWithUser();
                 break;
         }
-        if (_markers.Count > 0) UpdateMarkers();
+        UpdateMarkers();
         if (_navigationOn) Navigate();
         if (recordingWaypoints) RecordWaypoints();
         else ReplayWaypoints();
@@ -618,6 +618,18 @@ public class MapController : MRTKBaseInteractable
         Vector2 userGPS = getGPSCoords();
         Vector3 userLook = _mainCamera.transform.forward;
         userLook.y = 0.0f;
+
+		/************* CurLoc ************/
+		// Rotate CurLoc
+        float lookAngleZDeg = Vector3.Angle(Vector3.forward, userLook) * Mathf.Sign(userLook.x);
+        float mapRotZDeg = _mapRT.localEulerAngles.z;
+        _curlocRT.localRotation = Quaternion.Euler(0, 0, mapRotZDeg - lookAngleZDeg);
+		// Translate CurLoc
+		Vector2 gpsCoords = getGPSCoords();
+        _curlocRT.offsetMin = _mapRT.offsetMin + GPSToMapPos(gpsCoords.x, gpsCoords.y);
+        _curlocRT.offsetMax = _curlocRT.offsetMin;
+		/*********************************/
+
 
         foreach(var kvp in _markers)
         {
