@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Rover_CanvasBackplate
+  m_Name: Rover_CanvasBackplate_Menulistdark
   m_Shader: {fileID: 4800000, guid: 29b058829dc4dbf449bc59c038dfa631, type: 3}
   m_ValidKeywords:
   - _EDGE_ONLY_
@@ -47,16 +47,16 @@ Material:
     - _Edge_Power_: 0
     - _Edge_Width_: 0.5
     - _Fade_Out_: 1
-    - _Filter_Width_: 1
-    - _Frequency_: 0
+    - _Filter_Width_: 0
+    - _Frequency_: 9.32
     - _Gradient_Disabled_: 1
     - _Gradient_Enable_: 0
     - _GridScale: 0.02
     - _Highlight_: 0
     - _Highlight_Width_: 0.25
-    - _Iridescence_Edge_Intensity_: 0.511
+    - _Iridescence_Edge_Intensity_: 0
     - _Iridescence_Enable_: 1
-    - _Iridescence_Intensity_: 0.411
+    - _Iridescence_Intensity_: 0
     - _Line_Disabled_: 0
     - _Line_Enable_: 1
     - _Line_Gradient_Blend_: 0
@@ -70,11 +70,11 @@ Material:
     - _StencilComparison: 0
     - _StencilOperation: 0
     - _StencilReference: 0
-    - _Vertical_Offset_: 1.02
+    - _Vertical_Offset_: 2
     - _ZTest: 4
     - _ZWrite: 1
     m_Colors:
-    - _Base_Color_: {r: 0.078431346, g: 0.3254902, b: 0.39607844, a: 1}
+    - _Base_Color_: {r: 0.11764703, g: 0.34117648, b: 0.58431375, a: 0}
     - _Bottom_Left_: {r: 0, g: 0.33, b: 0.88, a: 1}
     - _Bottom_Right_: {r: 1, g: 1, b: 1, a: 1}
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
