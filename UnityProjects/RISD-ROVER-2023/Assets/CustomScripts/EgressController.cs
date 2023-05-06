@@ -24,7 +24,7 @@ public class EgressController : MonoBehaviour
 
     public void PerformTask(float s)
     {
-        if(Time.time - startTime > s / 10)
+        if(Time.time - startTime > s /10)
         {
             currStep++;
             startTime = Time.time;
