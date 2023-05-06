@@ -4,6 +4,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UX;
 using Microsoft.MixedReality.Toolkit;
+using System;
 using UnityEngine.UI;
 using RectTransform = UnityEngine.RectTransform;
 
@@ -197,8 +198,10 @@ public class MapController : MRTKBaseInteractable
             numWaypoints--;
             Destroy(waypoints[numWaypoints].Item2);
             waypoints.RemoveAt(numWaypoints);
-            _lineRenderer.positionCount = numWaypoints + 1;
+            // _lineRenderer.positionCount = numWaypoints + 1;
         }
+
+        List<Vector2> offsets = new List<Vector2>();
 
         for (int i = 0; i < numWaypoints; i++)
         {
@@ -211,10 +214,74 @@ public class MapController : MRTKBaseInteractable
 
             rtMap.offsetMin = _mapRT.offsetMin + GPSToMapPos(waypointGPS.x, waypointGPS.y);
             rtMap.offsetMax = rtMap.offsetMin;
-            _lineRenderer.SetPosition(i, OffsetToPos(rtMap.offsetMin));
+            offsets.Add(rtMap.offsetMin);
+            // _lineRenderer.SetPosition(i, OffsetToPos(rtMap.offsetMin));
+        }
+        offsets.Add(_curlocRT.offsetMin);
+
+        // _lineRenderer.SetPosition(numWaypoints, OffsetToPos(_curlocRT.offsetMin));
+        List<Vector3> route = GetRoute(offsets);
+        _lineRenderer.positionCount = route.Count;
+        _lineRenderer.SetPositions(route.ToArray());
+    }
+
+    private List<Vector3> GetRoute(List<Vector2> offsets)
+    {
+        List<Vector3> positions = new List<Vector3>();
+
+        // Lol naming king
+        bool prevOutOfScope = false;
+        bool prevPrevOutOfScope = false;
+        Vector2 prev = new Vector2();
+        Vector2 prevPrev = new Vector2();
+        const float maxScale = 1.02f;
+        float maxHeight = _canvasHalfHeight * maxScale;
+        float maxWidth = _canvasHalfWidth * maxScale;
+
+        foreach(Vector2 offset in offsets)
+        {
+            prevPrevOutOfScope = prevOutOfScope;
+            prevPrev = prev;
+
+            // When the current offset is within the panel
+            if (Math.Abs(offset.x) <= maxWidth && Math.Abs(offset.y) <= maxHeight)
+            {
+                // Find the nearest point to the panel boundaries
+                if (prevOutOfScope)
+                {
+                    Vector2 prevToCurr = offset - prev;
+                    float deltaX = Math.Abs(prev.x) - maxWidth;
+                    float deltaY = Math.Abs(prev.y) - maxHeight;
+                    float scaleX = deltaX > 0 ? Math.Abs(deltaX / prevToCurr.x) : Single.MaxValue;
+                    float scaleY = deltaY > 0 ? Math.Abs(deltaY / prevToCurr.y) : Single.MaxValue;
+
+                    Vector2 newPrev = prev + prevToCurr * Math.Min(scaleX, scaleY);
+                    positions.Add(OffsetToPos(newPrev));
+                }
+                positions.Add(OffsetToPos(offset));
+                prevOutOfScope = false;
+            }
+            else
+            {
+                prevOutOfScope = true;
+                prev = offset;
+            }
         }
 
-        _lineRenderer.SetPosition(numWaypoints, OffsetToPos(_curlocRT.offsetMin));
+        // Check if the last offset is out of scope but the second last is not
+        if (prevOutOfScope && !prevPrevOutOfScope)
+        {
+            Vector2 prevToPrevPrev = prevPrev - prev;
+            float deltaX = Math.Abs(prev.x) - maxWidth;
+            float deltaY = Math.Abs(prev.y) - maxHeight;
+            float scaleX = deltaX > 0 ? deltaX / prevToPrevPrev.x : Single.MaxValue;
+            float scaleY = deltaY > 0 ? deltaY / prevToPrevPrev.y : Single.MaxValue;
+
+            Vector2 newPrev = prev + prevToPrevPrev * Math.Min(scaleX, scaleY);
+            positions.Add(OffsetToPos(newPrev));
+        }
+
+        return positions;
     }
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
@@ -501,7 +568,7 @@ public class MapController : MRTKBaseInteractable
 
         pos += 0.088f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
         pos += 0.070f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
-        pos += 0.015f * (rot * Vector3.back);
+        pos += 0.01f * (_mainCamera.transform.position - pos).normalized;
 
         return pos;
     }
