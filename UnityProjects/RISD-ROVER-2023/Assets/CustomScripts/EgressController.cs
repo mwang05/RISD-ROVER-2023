@@ -5,10 +5,10 @@ using UnityEngine;
 public class EgressController : MonoBehaviour
 {
     private bool isTesting = false;
-    public enum Test 
+    public enum Test
     {
         PrepareUIA, PurgeN2, O2Pressure, EMUwater, AirLock, EMUPressure, AirLockDepress
-    } 
+    }
 
     private Test currTest;
 
@@ -17,10 +17,12 @@ public class EgressController : MonoBehaviour
     private float startTime;
 
     private TMPro.TMP_Text messageText;
-    private GameObject UIAText, N2Text, O2PressureText, EMUwaterText, AirLockText,EMUPressureText, AirLockDepressText;   
+    private GameObject UIAText, N2Text, O2PressureText, EMUwaterText, AirLockText,EMUPressureText, AirLockDepressText;
     private GameObject UIAComplete, N2Complete, O2PressureComplete, EMUwaterComplete, AirLockComplete, EMUPressureComplete, AirLockDepressComplete;
     private GameObject message, Egress, Nav;
     private bool[] isCompleted = new bool[7];
+
+    private MapController _mapControllerScript;
 
     public void PerformTask(float s)
     {
@@ -47,16 +49,17 @@ public class EgressController : MonoBehaviour
         bool allComplete = true;
 
         for(int i = 0; i < 7; i++) {
-            if (!isCompleted[i]) 
+            if (!isCompleted[i])
             {
                 allComplete = false;
                 break;
             }
         }
-        
+
         if (allComplete) {
-            Nav.SetActive(true);
             gameObject.SetActive(false);
+            Nav.SetActive(true);
+            _mapControllerScript.RecordStartTime();
         }
     }
 
@@ -64,7 +67,7 @@ public class EgressController : MonoBehaviour
     {
         switch (currTest)
         {
-            case Test.PrepareUIA: 
+            case Test.PrepareUIA:
                 switch (currStep)
                 {
                     case 0:
@@ -74,11 +77,11 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "When UIA Supply Pressure (uia_ < 23 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "Switch O2 Vent to CLOSE";
                         PerformTask(1);
-                        break; 
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -100,23 +103,23 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "When UIA Supply Pressure is > 3000 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "Switch O2 Supply to CLOSE";
                         PerformTask(1);
                         break;
-                    case 3: 
+                    case 3:
                         messageText.text = "Switch O2 Vent to OPEN";
                         PerformTask(1);
-                        break; 
-                    case 4: 
+                        break;
+                    case 4:
                         messageText.text = "When UIA Supply Pressure is < 23 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 5: 
+                        break;
+                    case 5:
                         messageText.text = "Switch O2 Vent to CLOSE";
                         PerformTask(1);
-                        break;  
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -127,7 +130,7 @@ public class EgressController : MonoBehaviour
                         break;
                 }
                 break;
-            
+
             case Test.O2Pressure:
                 switch (currStep)
                 {
@@ -138,11 +141,11 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "When UIA Supply Pressure is > 1500 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "Switch O2 Supply to CLOSE";
                         PerformTask(1);
-                        break; 
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -154,7 +157,7 @@ public class EgressController : MonoBehaviour
                 }
                 break;
 
-                case Test.EMUwater: 
+                case Test.EMUwater:
                 switch (currStep)
                 {
                     case 0:
@@ -164,31 +167,31 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "Switch EV-1 Waste to";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "When water level if < 5%, proceed";
                         PerformTask(1);
-                        break; 
-                    case 3: 
+                        break;
+                    case 3:
                         messageText.text = "Switch EV-1 Waste to CLOSE";
                         PerformTask(1);
-                        break; 
-                    case 4: 
+                        break;
+                    case 4:
                         messageText.text = "Refill EMU Water";
                         PerformTask(1);
-                        break; 
-                    case 5: 
+                        break;
+                    case 5:
                         messageText.text = "Switch EV-1 Supply to OPEN";
                         PerformTask(1);
-                        break;  
-                    case 6: 
+                        break;
+                    case 6:
                         messageText.text = "When water level is > 95%, proceed";
                         PerformTask(1);
-                        break; 
-                    case 7: 
+                        break;
+                    case 7:
                         messageText.text = "Switch EV-1 Supply to CLOSE";
                         PerformTask(1);
-                        break; 
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -210,11 +213,11 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "When airlock pressure is < 0.1 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "Switch Depress Pump to OFF";
                         PerformTask(1);
-                        break; 
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -236,11 +239,11 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "When UIA Supply Pressure > 3000 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "Switch O2 Supply to CLOSE";
                         PerformTask(1);
-                        break; 
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -262,11 +265,11 @@ public class EgressController : MonoBehaviour
                     case 1:
                         messageText.text = "When airlock pressure is < 0.1 psi, proceed";
                         PerformTask(1);
-                        break; 
-                    case 2: 
+                        break;
+                    case 2:
                         messageText.text = "Switch Depress Pump to OFF";
                         PerformTask(1);
-                        break; 
+                        break;
                     default:
                         message.SetActive(false);
                         isTesting = false;
@@ -287,7 +290,7 @@ public class EgressController : MonoBehaviour
     //    Destroy(Egress, delay);
     // }
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -300,7 +303,7 @@ public class EgressController : MonoBehaviour
         AirLockText = GameObject.Find("Airlock Text");
         EMUPressureText = GameObject.Find("EMU Text");
         AirLockDepressText = GameObject.Find("Airlock Depressure Text");
-        
+
         UIAComplete = GameObject.Find("UIA Text g");
         N2Complete = GameObject.Find("N2 Text g");
         O2PressureComplete = GameObject.Find("O2 Pressure Text g");
@@ -308,7 +311,7 @@ public class EgressController : MonoBehaviour
         AirLockComplete = GameObject.Find("Airlock Text g");
         EMUPressureComplete = GameObject.Find("EMU Text g");
         AirLockDepressComplete = GameObject.Find("Airlock Depressure Text g");
-        
+
         UIAComplete.SetActive(false);
         N2Complete.SetActive(false);
         O2PressureComplete.SetActive(false);
@@ -320,6 +323,8 @@ public class EgressController : MonoBehaviour
         message.SetActive(false);
 
         Nav = GameObject.Find("Main Panel");
+        _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
+
         Nav.SetActive(false);
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -9,6 +10,8 @@ using RectTransform = UnityEngine.RectTransform;
 
 public class MapController : MRTKBaseInteractable
 {
+	public DateTime _startTimestamp { get; private set; }
+
     enum MapFocusMode
     {
         MapNoFocus,
@@ -684,5 +687,11 @@ public class MapController : MRTKBaseInteractable
         _actionButtons.SetActive(false);
         voiceMemoObj.SetActive(true);
     }
+
+	// Time
+	public void RecordStartTime()
+	{
+		_startTimestamp = DateTime.Now;
+	}
 }
 
