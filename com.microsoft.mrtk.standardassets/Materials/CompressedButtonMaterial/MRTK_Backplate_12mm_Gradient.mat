@@ -71,7 +71,7 @@ Material:
     - _Edge_Power_: 0
     - _Edge_Width_: 0.5
     - _Fade_Out_: 1
-    - _Filter_Width_: 1
+    - _Filter_Width_: 0.83
     - _Frequency_: 0.5
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -85,12 +85,12 @@ Material:
     - _Iridescent_Map_Enable_: 1
     - _Line_Enable_: 1
     - _Line_Gradient_Blend_: 0
-    - _Line_Width_: 0.001
+    - _Line_Width_: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Radius_: 0.012
+    - _Radius_: 0.01
     - _Radius_Bottom_Left_: 1
     - _Radius_Bottom_Right_: 1
     - _Radius_Top_Left_: 1
