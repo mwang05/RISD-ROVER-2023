@@ -81,20 +81,24 @@ public class Geosampling : MonoBehaviour
     private MapController _mapControllerScript;
     private ScreenspaceCanvas _ssCanvasScript;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        _geosamplingItems = new List<GeosamplingItem>();
         _mainPanel = GameObject.Find("Main Panel");
         _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
         _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
     }
 
-    // // Update is called once per frame
-    // void Update()
-    // {
-    //
-    // }
+    // Start is called before the first frame update
+    void Start()
+    {
+        _geosamplingItems = new List<GeosamplingItem>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     public void ScannerCallback()
     {

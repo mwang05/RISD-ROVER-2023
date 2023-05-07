@@ -40,18 +40,22 @@ public class ScreenspaceCanvas : MonoBehaviour
         _countdown.SetActive(false);
     }
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         _canvasTf = GetComponent<RectTransform>().transform;
         _cameraTf = Camera.main.transform;
 
         _systemMessage = GameObject.Find("SS SysMsg");
         _systemMessageText = GameObject.Find("SS SysMsg Text").GetComponent<TMPro.TMP_Text>();
-        HideMessage();
 
         _countdown = GameObject.Find("SS Countdown");
         _countdownText = _countdown.GetComponent<TMPro.TMP_Text>();
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        HideMessage();
         HideCountdown();
     }
 

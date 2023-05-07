@@ -290,9 +290,7 @@ public class EgressController : MonoBehaviour
     //    Destroy(Egress, delay);
     // }
 
-
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         message = GameObject.Find("egress msg");
         messageText = GameObject.Find("egress msg text").GetComponent<TMPro.TMP_Text>();
@@ -312,6 +310,14 @@ public class EgressController : MonoBehaviour
         EMUPressureComplete = GameObject.Find("EMU Text g");
         AirLockDepressComplete = GameObject.Find("Airlock Depressure Text g");
 
+        Nav = GameObject.Find("Main Panel");
+        _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
+    }
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
         UIAComplete.SetActive(false);
         N2Complete.SetActive(false);
         O2PressureComplete.SetActive(false);
@@ -321,9 +327,6 @@ public class EgressController : MonoBehaviour
         AirLockDepressComplete.SetActive(false);
         // CompleteText.SetActive(false);
         message.SetActive(false);
-
-        Nav = GameObject.Find("Main Panel");
-        _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
 
         Nav.SetActive(false);
     }
