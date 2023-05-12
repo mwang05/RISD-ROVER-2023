@@ -98,6 +98,12 @@ public class MapController : MRTKBaseInteractable
     [SerializeField] private GameObject waypointPrefab;
     private Transform waypointsTF;
 
+    // // Navigation
+    [SerializeField] private GameObject segmentPrefab;
+    private List<GameObject> segmentObjs;
+    private List<LineRenderer> lineRenderers;
+    private Transform navigationTf;
+
     private float _canvasScale;
     private float _canvasHalfWidth;
     private float _canvasHalfHeight;
@@ -134,7 +140,6 @@ public class MapController : MRTKBaseInteractable
         _lineRenderer = GameObject.Find("Map").GetComponent<LineRenderer>();
         _lineRenderer.startWidth = 0.001f;
         _lineRenderer.endWidth = 0.001f;
-        _lineRenderer.numCornerVertices = 5;
         _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
         _panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
         _canvasScale = GameObject.Find("Canvas").transform.localScale.x;
@@ -153,6 +158,9 @@ public class MapController : MRTKBaseInteractable
         };
         voiceMemoObj = GameObject.Find("Voice Memo");
         voiceMemoObj.SetActive(false);
+        navigationTf = GameObject.Find("Navigation").transform;
+        segmentObjs = new List<GameObject>();
+        lineRenderers = new List<LineRenderer>();
     }
 
     void Update()
@@ -220,68 +228,86 @@ public class MapController : MRTKBaseInteractable
         offsets.Add(_curlocRT.offsetMin);
 
         // _lineRenderer.SetPosition(numWaypoints, OffsetToPos(_curlocRT.offsetMin));
-        List<Vector3> route = GetRoute(offsets);
-        _lineRenderer.positionCount = route.Count;
-        _lineRenderer.SetPositions(route.ToArray());
+        List<List<Vector3>> routes = GetRoute(offsets);
+        if (routes.Count > segmentObjs.Count)
+        {
+            for (int i = 0; i < routes.Count - segmentObjs.Count; i++)
+            {
+                GameObject segment = Instantiate(segmentPrefab, navigationTf);
+                segmentObjs.Add(segment);
+                lineRenderers.Add(segment.GetComponent<LineRenderer>());
+            }
+        }
+        else
+        {
+            for (int i = routes.Count; i < segmentObjs.Count; i++)
+            {
+                Destroy(segmentObjs[i]);
+            }
+
+            segmentObjs.RemoveRange(routes.Count, segmentObjs.Count - routes.Count);
+            lineRenderers.RemoveRange(routes.Count, lineRenderers.Count - routes.Count);
+        }
+
+        for (int i = 0; i < routes.Count; i++)
+        {
+            lineRenderers[i].positionCount = routes[i].Count;
+            lineRenderers[i].SetPositions(routes[i].ToArray());
+        }
     }
 
-    private List<Vector3> GetRoute(List<Vector2> offsets)
+    private List<List<Vector3>> GetRoute(List<Vector2> offsets)
     {
+        List<List<Vector3>> segments = new List<List<Vector3>>();
         List<Vector3> positions = new List<Vector3>();
 
-        // Lol naming king
-        bool prevOutOfScope = false;
-        bool prevPrevOutOfScope = false;
-        Vector2 prev = new Vector2();
-        Vector2 prevPrev = new Vector2();
-        const float maxScale = 1.02f;
-        float maxHeight = _canvasHalfHeight * maxScale;
-        float maxWidth = _canvasHalfWidth * maxScale;
+        bool prevInScope = true;
+        float maxHeight = _canvasHalfHeight * 0.97f;
+        float maxWidth = _canvasHalfWidth * 1.01f;
 
-        foreach(Vector2 offset in offsets)
+        bool IsWithinScope(Vector2 offset)
         {
-            prevPrevOutOfScope = prevOutOfScope;
-            prevPrev = prev;
+            return (Math.Abs(offset.x) <= maxWidth && Math.Abs(offset.y) <= maxHeight);
+        }
 
-            // When the current offset is within the panel
-            if (Math.Abs(offset.x) <= maxWidth && Math.Abs(offset.y) <= maxHeight)
+        Vector3 GetIntersectionWithBorder(Vector2 outside, Vector2 inside)
+        {
+            Vector2 outsideToInside = inside - outside;
+            float deltaX = Math.Abs(outside.x) - maxWidth;
+            float deltaY = Math.Abs(outside.y) - maxHeight;
+            float scale = deltaX > deltaY ? Math.Abs(deltaX / outsideToInside.x) : Math.Abs(deltaY / outsideToInside.y);
+
+            return OffsetToPos(outside + outsideToInside * scale);
+        }
+
+        for (int i = 0; i < offsets.Count; i++)
+        {
+            bool currInScope = IsWithinScope(offsets[i]);
+            bool nextInScope = i == offsets.Count - 1 || IsWithinScope(offsets[i + 1]);
+
+            if (currInScope)
             {
-                // Find the nearest point to the panel boundaries
-                if (prevOutOfScope)
+                if (!prevInScope)
                 {
-                    Vector2 prevToCurr = offset - prev;
-                    float deltaX = Math.Abs(prev.x) - maxWidth;
-                    float deltaY = Math.Abs(prev.y) - maxHeight;
-                    float scaleX = deltaX > 0 ? Math.Abs(deltaX / prevToCurr.x) : Single.MaxValue;
-                    float scaleY = deltaY > 0 ? Math.Abs(deltaY / prevToCurr.y) : Single.MaxValue;
-
-                    Vector2 newPrev = prev + prevToCurr * Math.Min(scaleX, scaleY);
-                    positions.Add(OffsetToPos(newPrev));
+                    Vector3 prevIntersection = GetIntersectionWithBorder(offsets[i - 1], offsets[i]);
+                    positions.Add(prevIntersection);
                 }
-                positions.Add(OffsetToPos(offset));
-                prevOutOfScope = false;
+                positions.Add(OffsetToPos(offsets[i]));
+                if (!nextInScope)
+                {
+                    Vector3 nextIntersection = GetIntersectionWithBorder(offsets[i + 1], offsets[i]);
+                    positions.Add(nextIntersection);
+                    segments.Add(positions);
+                    positions = new List<Vector3>();
+                }
             }
-            else
-            {
-                prevOutOfScope = true;
-                prev = offset;
-            }
+
+            prevInScope = currInScope;
         }
 
-        // Check if the last offset is out of scope but the second last is not
-        if (prevOutOfScope && !prevPrevOutOfScope)
-        {
-            Vector2 prevToPrevPrev = prevPrev - prev;
-            float deltaX = Math.Abs(prev.x) - maxWidth;
-            float deltaY = Math.Abs(prev.y) - maxHeight;
-            float scaleX = deltaX > 0 ? deltaX / prevToPrevPrev.x : Single.MaxValue;
-            float scaleY = deltaY > 0 ? deltaY / prevToPrevPrev.y : Single.MaxValue;
+        if (positions.Count > 1) segments.Add(positions);
 
-            Vector2 newPrev = prev + prevToPrevPrev * Math.Min(scaleX, scaleY);
-            positions.Add(OffsetToPos(newPrev));
-        }
-
-        return positions;
+        return segments;
     }
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
@@ -545,6 +571,12 @@ public class MapController : MRTKBaseInteractable
 
     public void OnMarkerDeletePressed()
     {
+        if (_navigationOn && _navigateTo == _newMarkerOnMap.GetComponent<RectTransform>())
+        {
+            _navigationOn = false;
+            _navigateTo = null;
+            _lineRenderer.positionCount = 0;
+        }
         _markers.Remove(_newMarkerOnMap);
         Destroy(_newMarkerOnMap);
         Destroy(_newMarkerOnCompass);
@@ -568,7 +600,7 @@ public class MapController : MRTKBaseInteractable
 
         pos += 0.088f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
         pos += 0.070f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
-        pos += 0.01f * (_mainCamera.transform.position - pos).normalized;
+        pos += 0.015f * (_mainCamera.transform.position - pos);
 
         return pos;
     }
@@ -576,8 +608,12 @@ public class MapController : MRTKBaseInteractable
     private void Navigate()
     {
         Vector3 mapPos = _panelTf.position;
-        _lineRenderer.SetPosition(0, OffsetToPos(_curlocRT.offsetMin));
-        _lineRenderer.SetPosition(1, OffsetToPos(_navigateTo.offsetMin));
+        _lineRenderer.positionCount = 2;
+
+        List<Vector2> offsets = new List<Vector2> { _navigateTo.offsetMin, _curlocRT.offsetMin };
+        _lineRenderer.SetPositions(GetRoute(offsets)[0].ToArray());
+        //_lineRenderer.SetPosition(0, OffsetToPos(_curlocRT.offsetMin));
+        //_lineRenderer.SetPosition(1, OffsetToPos(_navigateTo.offsetMin));
     }
 
     public void OnMarkerButtonSelectExit()
