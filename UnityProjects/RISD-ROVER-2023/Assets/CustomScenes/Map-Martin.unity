@@ -16941,8 +16941,8 @@ MonoBehaviour:
       m_PersistentCalls:
         m_Calls: []
   disabledInteractorTypes: []
-  _maxZoom: 2
-  POIPrefab: {fileID: 626432053551635841, guid: a1bfc2edf13e50848bf4403709bce93c, type: 3}
+  maxZoom: 2
+  poiPrefab: {fileID: 626432053551635841, guid: a1bfc2edf13e50848bf4403709bce93c, type: 3}
   obstaclePrefab: {fileID: 626432053551635841, guid: cf5544a5953c27d44a4b2635bb48151c, type: 3}
   roverPrefab: {fileID: 626432053551635841, guid: cf10cbb97ae92f6408d40014d311ca19, type: 3}
   compassMarkerPrefab: {fileID: 626432053551635841, guid: a1bfc2edf13e50848bf4403709bce93c, type: 3}

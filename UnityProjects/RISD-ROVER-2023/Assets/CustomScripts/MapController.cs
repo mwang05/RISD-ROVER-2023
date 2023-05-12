@@ -20,7 +20,6 @@ public class MapController : MRTKBaseInteractable
     };
 
     private RectTransform mapRT, canvasRT;
-    private BoxCollider meshBC;
     private Camera mainCamera;
 
     // Satellite info
@@ -39,9 +38,8 @@ public class MapController : MRTKBaseInteractable
 
     // Pan
     private Dictionary<IXRInteractor, Vector2> lastPositions = new Dictionary<IXRInteractor, Vector2>();
-    private Vector2 firstPosition = new Vector2();
-    private Vector2 initialOffsetMin = new Vector2();
-    private Vector2 initialOffsetMax = new Vector2();
+    private Vector2 firstPosition;
+    private Vector2 initialOffsetMin;
 
     // Focus
     private MapFocusMode focusMode = MapFocusMode.MapNoFocus;
@@ -69,7 +67,6 @@ public class MapController : MRTKBaseInteractable
 
     [SerializeField] private GameObject poiPrefab;
     [SerializeField] private GameObject obstaclePrefab, roverPrefab;
-    [SerializeField] private GameObject compassMarkerPrefab;
     [SerializeField] private float markerEditSensitivity = 0.000033f;
 
     // Each marker is a (type, gpsCoords, mapMarkerObj, compassMarkerObj, mapRT, compassRT) 5-tuple
@@ -114,7 +111,6 @@ public class MapController : MRTKBaseInteractable
         mainCamera = Camera.main;
         mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
         canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
-        meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
         markers = new Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)>();
         compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
         compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
@@ -140,7 +136,7 @@ public class MapController : MRTKBaseInteractable
         Rect canvasR = canvasRT.rect;
         canvasHalfWidth = canvasR.width / 2;
         canvasHalfHeight = canvasR.height / 2;
-        mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        mapRT.localScale = GetLocalScale(zoomSeries[zoomIndex]);
         waypoints = new List<(Vector2, GameObject, RectTransform)>();
         waypointsTf = GameObject.Find("Waypoints").GetComponent<Transform>();
         showMarker = new Dictionary<MarkerType, bool>
@@ -303,128 +299,126 @@ public class MapController : MRTKBaseInteractable
 
     public override void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
     {
-        if (updatePhase == XRInteractionUpdateOrder.UpdatePhase.Dynamic)
+        if (updatePhase != XRInteractionUpdateOrder.UpdatePhase.Dynamic) return;
+
+        foreach (var interactor in interactorsSelecting)
         {
-            foreach (var interactor in interactorsSelecting)
+            if (interactor is PokeInteractor)
             {
-                if (interactor is PokeInteractor)
+                // attachTransform will be the actual point of the touch interaction (e.g. index tip)
+                Vector2 localTouchPosition = transform.InverseTransformPoint(interactor.GetAttachTransform(this).position);
+
+                // Have we seen this interactor before? If not, last position = current position
+                if (!lastPositions.TryGetValue(interactor, out Vector2 lastPosition))
                 {
-                    // attachTransform will be the actual point of the touch interaction (e.g. index tip)
-                    Vector2 localTouchPosition = transform.InverseTransformPoint(interactor.GetAttachTransform(this).position);
+                    // Pan
+                    firstPosition = localTouchPosition;
+                    initialOffsetMin = mapRT.offsetMin;
 
-                    // Have we seen this interactor before? If not, last position = current position
-                    if (!lastPositions.TryGetValue(interactor, out Vector2 lastPosition))
+                    // Focus
+                    focusMode = MapFocusMode.MapNoFocus;
+
+                    // Marker
+                    if (actionMode == MapActionMode.AddMarker)
                     {
-                        // Pan
-                        firstPosition = localTouchPosition;
-                        initialOffsetMin = mapRT.offsetMin;
-                        initialOffsetMax = mapRT.offsetMax;
-
-                        // Focus
-                        focusMode = MapFocusMode.MapNoFocus;
-
-                        // Marker
-                        if (actionMode == MapActionMode.AddMarker)
+                        switch (selectedMarkerType)
                         {
-                            switch (selectedMarkerType)
-                            {
-                                case MarkerType.Obstacle:
-                                    newMarkerOnMap = Instantiate(obstaclePrefab, markersTf);
-                                    newMarkerOnCompass = Instantiate(obstaclePrefab, compassMarkersRT);
-                                    break;
-                                case MarkerType.Rover:
-                                    newMarkerOnMap = Instantiate(roverPrefab, markersTf);
-                                    newMarkerOnCompass = Instantiate(roverPrefab, compassMarkersRT);
-                                    break;
-                                default:
-                                    newMarkerOnMap = Instantiate(poiPrefab, markersTf);
-                                    newMarkerOnCompass = Instantiate(poiPrefab, compassMarkersRT);
-                                    break;
-                            }
-                            newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                            newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                            markers.Add(newMarkerOnMap,
-								(selectedMarkerType,
-                                    MapPosToGps(firstPosition),
-                                    //(MapToWorldPos(firstPosition),
-                                    newMarkerOnMap,
-                                    newMarkerOnCompass,
-                                    newMarkerOnMap.GetComponent<RectTransform>(),
-                                    newMarkerOnCompass.GetComponent<RectTransform>()
-                                    ));
-                            actionMode = MapActionMode.EditMarker;
+                            case MarkerType.Obstacle:
+                                newMarkerOnMap = Instantiate(obstaclePrefab, markersTf);
+                                newMarkerOnCompass = Instantiate(obstaclePrefab, compassMarkersRT);
+                                break;
+                            case MarkerType.Rover:
+                                newMarkerOnMap = Instantiate(roverPrefab, markersTf);
+                                newMarkerOnCompass = Instantiate(roverPrefab, compassMarkersRT);
+                                break;
+                            default:
+                                newMarkerOnMap = Instantiate(poiPrefab, markersTf);
+                                newMarkerOnCompass = Instantiate(poiPrefab, compassMarkersRT);
+                                break;
                         }
-                        else if (actionMode != MapActionMode.EditMarker)
+                        newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+                        newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+                        markers.Add(newMarkerOnMap,
+							(selectedMarkerType,
+                                MapPosToGps(firstPosition),
+                                newMarkerOnMap,
+                                newMarkerOnCompass,
+                                newMarkerOnMap.GetComponent<RectTransform>(),
+                                newMarkerOnCompass.GetComponent<RectTransform>()
+                                ));
+                        actionMode = MapActionMode.EditMarker;
+                    }
+                    else if (actionMode != MapActionMode.EditMarker)
+                    {
+                        float minDist = markerEditSensitivity + 1;
+                        foreach (var kvp in markers)
                         {
-                            float minDist = markerEditSensitivity + 1;
-                            foreach (var kvp in markers)
+                            float dist = (kvp.Value.Item2 - MapPosToGps(firstPosition)).magnitude;
+                            if (dist < minDist)
                             {
-                                float dist = (kvp.Value.Item2 - MapPosToGps(firstPosition)).magnitude;
-                                if (dist < minDist)
-                                {
-                                    minDist = dist;
-                                    newMarkerOnMap = kvp.Key;
-                                    newMarkerOnCompass = kvp.Value.Item3;
-                                }
+                                minDist = dist;
+                                newMarkerOnMap = kvp.Key;
+                                newMarkerOnCompass = kvp.Value.Item3;
                             }
+                        }
 
-                            if (minDist < markerEditSensitivity)
-                            {
-                                actionButtons.SetActive(true);
-                                actionMode = MapActionMode.SelectMarker;
-                            }
-                            else
-                            {
-                                newMarkerOnMap = null;
-                                newMarkerOnCompass = null;
-                                if (voiceMemoObj.activeSelf) {
-                                    voiceMemoObj.SetActive(false);
-                                }
+                        if (minDist < markerEditSensitivity)
+                        {
+                            actionButtons.SetActive(true);
+                            actionMode = MapActionMode.SelectMarker;
+                        }
+                        else
+                        {
+                            newMarkerOnMap = null;
+                            newMarkerOnCompass = null;
+                            if (voiceMemoObj.activeSelf) {
+                                voiceMemoObj.SetActive(false);
                             }
                         }
                     }
-
-                    // Update the offsets (top, right, bottom, left) based on the change in position
-                    Vector2 delta = localTouchPosition - firstPosition;
-
-                    switch (actionMode)
-                    {
-                        case MapActionMode.Pan:
-                            mapRT.offsetMin = initialOffsetMin + delta;
-                            mapRT.offsetMax = mapRT.offsetMin;
-                            break;
-                        case MapActionMode.EditMarker:
-                            var markerItem = markers[newMarkerOnMap];
-                            markerItem.Item2 = MapPosToGps(localTouchPosition);
-                            markers[newMarkerOnMap] = markerItem;
-                            break;
-                        case MapActionMode.SelectMarker:
-                            var newPos = newMarkerOnMap.transform.position;
-                            newPos.z -= 0.02f;
-                            newPos.y -= 0.02f;
-                            actionButtons.transform.position = newPos;
-                            break;
-                    }
-
-                    // Write/update the last-position
-                    if (lastPositions.ContainsKey(interactor))
-                    {
-                        lastPositions[interactor] = localTouchPosition;
-                    }
-                    else
-                    {
-                        lastPositions.Add(interactor, localTouchPosition);
-                    }
-
-                    break;
                 }
+
+                // Update the offsets (top, right, bottom, left) based on the change in position
+                Vector2 delta = localTouchPosition - firstPosition;
+
+                switch (actionMode)
+                {
+                    case MapActionMode.Pan:
+                        mapRT.offsetMin = initialOffsetMin + delta;
+                        mapRT.offsetMax = mapRT.offsetMin;
+                        break;
+                    case MapActionMode.EditMarker:
+                        var markerItem = markers[newMarkerOnMap];
+                        markerItem.Item2 = MapPosToGps(localTouchPosition);
+                        markers[newMarkerOnMap] = markerItem;
+                        break;
+                    case MapActionMode.SelectMarker:
+                        var newPos = newMarkerOnMap.transform.position;
+                        newPos.z -= 0.02f;
+                        newPos.y -= 0.02f;
+                        actionButtons.transform.position = newPos;
+                        break;
+                }
+
+                // Write/update the last-position
+                if (lastPositions.ContainsKey(interactor))
+                {
+                    lastPositions[interactor] = localTouchPosition;
+                }
+                else
+                {
+                    lastPositions.Add(interactor, localTouchPosition);
+                }
+
+                break;
             }
         }
+
     }
 
     /************* Scale ***************/
 
-    private Vector3 getLocalScale(float scale)
+    private static Vector3 GetLocalScale(float scale)
     {
         return new Vector3(scale, scale, 1.0f);
     }
@@ -432,13 +426,13 @@ public class MapController : MRTKBaseInteractable
     public void MapZoomInCallback()
     {
         zoomIndex = zoomIndex >= zoomSeries.Count - 1 ? zoomIndex : zoomIndex + 1;
-        mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        mapRT.localScale = GetLocalScale(zoomSeries[zoomIndex]);
     }
 
     public void MapZoomOutCallback()
     {
         zoomIndex = zoomIndex <= 0 ? zoomIndex : zoomIndex - 1;
-        mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        mapRT.localScale = GetLocalScale(zoomSeries[zoomIndex]);
     }
 
     /************* Focus **************/
@@ -468,9 +462,7 @@ public class MapController : MRTKBaseInteractable
 
     private void CenterMapAtUser()
     {
-        // Vector3 userPos = _mainCamera.transform.position;
-		// Vector2 userPosMap = WorldToMapPos(userPos);
-		Vector2 gpsCoords = GetGpsCoords();
+        Vector2 gpsCoords = GetGpsCoords();
 		Vector2 userPosMap = GpsToMapPos(gpsCoords.x, gpsCoords.y);
         mapRT.offsetMin = -userPosMap;
         mapRT.offsetMax = mapRT.offsetMin;
