@@ -5,6 +5,7 @@ using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.UX;
 using Microsoft.MixedReality.Toolkit;
 using System;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using RectTransform = UnityEngine.RectTransform;
 
@@ -18,22 +19,22 @@ public class MapController : MRTKBaseInteractable
         NumMapFocusModes,
     };
 
-    private RectTransform _mapRT, _canvasRT;
-    private BoxCollider _meshBC;
-    private Camera _mainCamera;
+    private RectTransform mapRT, canvasRT;
+    private BoxCollider meshBC;
+    private Camera mainCamera;
 
     // Satellite info
     // hard coded center
-    private const float satCenterLatitude  = 29.564575f;   // latitude at the center of the satellite image, in degree
-    private const float satCenterLongitude = -95.081164f;  // longitude at the center of the satellite image, in degree
+    private const float SatCenterLatitude  = 29.564575f;   // latitude at the center of the satellite image, in degree
+    private const float SatCenterLongitude = -95.081164f;  // longitude at the center of the satellite image, in degree
     // hard coded scale
-    private const float satLatitudeRange = 0.002216f;  // the satellite image covers this much latitudes in degree
-    private const float satLongitudeRange = 0.00255f;  // the satellite image covers this much longitudes in degree
+    private const float SatLatitudeRange = 0.002216f;  // the satellite image covers this much latitudes in degree
+    private const float SatLongitudeRange = 0.00255f;  // the satellite image covers this much longitudes in degree
 
 
     // Zoom
-    [SerializeField] private float _maxZoom = 2.0f;
-    private List<float> zoomSeries = new List<float>{ 1, 2, 5, 10 };
+    [SerializeField] private float maxZoom = 2.0f;
+    private readonly List<float> zoomSeries = new List<float>{ 1, 2, 5, 10 };
     private int zoomIndex = 1;
 
     // Pan
@@ -43,8 +44,8 @@ public class MapController : MRTKBaseInteractable
     private Vector2 initialOffsetMax = new Vector2();
 
     // Focus
-    private MapFocusMode _focusMode = MapFocusMode.MapNoFocus;
-    private float _mapLastRotZDeg = 0.0f;
+    private MapFocusMode focusMode = MapFocusMode.MapNoFocus;
+    private float mapLastRotZDeg = 0.0f;
 
     // Marker
     enum MarkerType
@@ -54,7 +55,6 @@ public class MapController : MRTKBaseInteractable
         POI,
         Rover
     };
-    private Vector2 _lastTouchPosition;
 
     enum MapActionMode
     {
@@ -67,36 +67,35 @@ public class MapController : MRTKBaseInteractable
 
     private Dictionary<MarkerType, bool> showMarker;
 
-    [SerializeField] private GameObject POIPrefab, obstaclePrefab, roverPrefab;
+    [SerializeField] private GameObject poiPrefab;
+    [SerializeField] private GameObject obstaclePrefab, roverPrefab;
     [SerializeField] private GameObject compassMarkerPrefab;
     [SerializeField] private float markerEditSensitivity = 0.000033f;
 
     // Each marker is a (type, gpsCoords, mapMarkerObj, compassMarkerObj, mapRT, compassRT) 5-tuple
-    private Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)> _markers;
+    private Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)> markers;
 
-    private RectTransform _compassRT, _compassMarkersRT;
-    private GameObject _newMarkerOnMap, _newMarkerOnCompass;
-    private Transform _markersTF;
-    private float _panelXBound, _panelYBound;
-    private GameObject _markersObj;
-    private float _buttonPressedTime;
-    private MarkerType _selectedMarkerType;
-    private GameObject _obstacleDisabled, _POIDisabled, _roverDisabled;
-    private GameObject _actionButtons;
-    private RectTransform _actionButtonsRT;
-    private MapActionMode _actionMode;
-    private bool _navigationOn = false;
-    private RectTransform _navigateTo;
-    private LineRenderer _lineRenderer;
-    private RectTransform _curlocRT;
-    private Transform _panelTf;
+    private RectTransform compassRT, compassMarkersRT;
+    private GameObject newMarkerOnMap, newMarkerOnCompass;
+    private Transform markersTf;
+    private GameObject markersObj;
+    private float buttonPressedTime;
+    private MarkerType selectedMarkerType;
+    private GameObject obstacleDisabled, poiDisabled, roverDisabled;
+    private GameObject actionButtons;
+    private MapActionMode actionMode;
+    private bool navigationOn = false;
+    private RectTransform navigateTo;
+    private LineRenderer markerLineRenderer;
+    private RectTransform currLocRT;
+    private Transform panelTf;
 
     // Waypoint
     private List<(Vector2, GameObject, RectTransform)> waypoints;
     private bool recordingWaypoints = true;
     [SerializeField] private float waypointInterval = 0.00005f;
     [SerializeField] private GameObject waypointPrefab;
-    private Transform waypointsTF;
+    private Transform waypointsTf;
 
     // // Navigation
     [SerializeField] private GameObject segmentPrefab;
@@ -104,51 +103,46 @@ public class MapController : MRTKBaseInteractable
     private List<LineRenderer> lineRenderers;
     private Transform navigationTf;
 
-    private float _canvasScale;
-    private float _canvasHalfWidth;
-    private float _canvasHalfHeight;
+    private float canvasHalfWidth;
+    private float canvasHalfHeight;
 
     // Voice
     private GameObject voiceMemoObj;
 
     void Start()
     {
-        _mainCamera = Camera.main;
-        _mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
-        _canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
-        _meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
-        _markers = new Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)>();
-        _compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
-        _compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
-        _markersObj = GameObject.Find("Markers");
-        _markersTF = _markersObj.GetComponent<Transform>();
+        mainCamera = Camera.main;
+        mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
+        canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
+        meshBC = GameObject.Find("Map Panel").GetComponent<BoxCollider>();
+        markers = new Dictionary<GameObject, (MarkerType, Vector2, GameObject, GameObject, RectTransform, RectTransform)>();
+        compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
+        compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
+        markersObj = GameObject.Find("Markers");
+        markersTf = markersObj.GetComponent<Transform>();
         var panelSize = GameObject.Find("Map Panel").GetComponent<BoxCollider>().size;
-        _panelXBound = panelSize.x / 2;
-        _panelYBound = panelSize.y / 2;
         // _waypointDisabled = GameObject.Find("Waypoint Disabled");
-        _roverDisabled = GameObject.Find("Rover Disabled");
-        _obstacleDisabled = GameObject.Find("Obstacle Disabled");
-        _POIDisabled = GameObject.Find("POI Disabled");
+        roverDisabled = GameObject.Find("Rover Disabled");
+        obstacleDisabled = GameObject.Find("Obstacle Disabled");
+        poiDisabled = GameObject.Find("POI Disabled");
         // _waypointDisabled.SetActive(false);
-        _roverDisabled.SetActive(false);
-        _obstacleDisabled.SetActive(false);
-        _POIDisabled.SetActive(false);
-        _actionButtons = GameObject.Find("Marker Action Buttons");
-        _actionButtonsRT = _actionButtons.GetComponent<RectTransform>();
-        _actionButtons.SetActive(false);
-        _actionMode = MapActionMode.Pan;
-        _lineRenderer = GameObject.Find("Map").GetComponent<LineRenderer>();
-        _lineRenderer.startWidth = 0.001f;
-        _lineRenderer.endWidth = 0.001f;
-        _curlocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
-        _panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
-        _canvasScale = GameObject.Find("Canvas").transform.localScale.x;
-        Rect canvasR = _canvasRT.rect;
-        _canvasHalfWidth = canvasR.width / 2;
-        _canvasHalfHeight = canvasR.height / 2;
-        _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        roverDisabled.SetActive(false);
+        obstacleDisabled.SetActive(false);
+        poiDisabled.SetActive(false);
+        actionButtons = GameObject.Find("Marker Action Buttons");
+        actionButtons.SetActive(false);
+        actionMode = MapActionMode.Pan;
+        markerLineRenderer = GameObject.Find("Map").GetComponent<LineRenderer>();
+        markerLineRenderer.startWidth = 0.001f;
+        markerLineRenderer.endWidth = 0.001f;
+        currLocRT = GameObject.Find("Curloc").GetComponent<RectTransform>();
+        panelTf = GameObject.Find("Map Panel").GetComponent<Transform>();
+        Rect canvasR = canvasRT.rect;
+        canvasHalfWidth = canvasR.width / 2;
+        canvasHalfHeight = canvasR.height / 2;
+        mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
         waypoints = new List<(Vector2, GameObject, RectTransform)>();
-        waypointsTF = GameObject.Find("Waypoints").GetComponent<Transform>();
+        waypointsTf = GameObject.Find("Waypoints").GetComponent<Transform>();
         showMarker = new Dictionary<MarkerType, bool>
         {
             { MarkerType.Obstacle, true },
@@ -165,7 +159,7 @@ public class MapController : MRTKBaseInteractable
 
     void Update()
     {
-        switch (_focusMode)
+        switch (focusMode)
         {
             case MapFocusMode.MapCenterUser:
                 CenterMapAtUser();
@@ -175,7 +169,7 @@ public class MapController : MRTKBaseInteractable
                 break;
         }
         UpdateMarkers();
-        if (_navigationOn) Navigate();
+        if (navigationOn) Navigate();
         if (recordingWaypoints) RecordWaypoints();
         else ReplayWaypoints();
     }
@@ -183,30 +177,29 @@ public class MapController : MRTKBaseInteractable
     private void RecordWaypoints()
     {
         // Vector2 currGPS = MapPosToGPS(new Vector2(0, 0));
-        Vector2 currGPS = getGPSCoords();
+        Vector2 gpsCoords = GetGpsCoords();
         int numWaypoints = waypoints.Count;
 
-        if (numWaypoints == 0 || (currGPS - waypoints[numWaypoints-1].Item1).magnitude > waypointInterval)
+        if (numWaypoints == 0 || (gpsCoords - waypoints[numWaypoints-1].Item1).magnitude > waypointInterval)
         {
-            GameObject newWaypoint = Instantiate(waypointPrefab, waypointsTF);
+            GameObject newWaypoint = Instantiate(waypointPrefab, waypointsTf);
             newWaypoint.SetActive(false);
-            waypoints.Add((currGPS, newWaypoint, newWaypoint.GetComponent<RectTransform>()));
+            waypoints.Add((gpsCoords, newWaypoint, newWaypoint.GetComponent<RectTransform>()));
         }
     }
 
     private void ReplayWaypoints()
     {
-        Vector2 currGPS = getGPSCoords();
+        Vector2 currGps = GetGpsCoords();
         int numWaypoints = waypoints.Count;
 
         if (numWaypoints == 0) return;
 
-        if ((currGPS - waypoints[numWaypoints - 1].Item1).magnitude < waypointInterval / 3)
+        if ((currGps - waypoints[numWaypoints - 1].Item1).magnitude < waypointInterval / 3)
         {
             numWaypoints--;
             Destroy(waypoints[numWaypoints].Item2);
             waypoints.RemoveAt(numWaypoints);
-            // _lineRenderer.positionCount = numWaypoints + 1;
         }
 
         List<Vector2> offsets = new List<Vector2>();
@@ -220,14 +213,12 @@ public class MapController : MRTKBaseInteractable
             // Note: pos gives offsets in rotated MAP SPACE,
             //       but we must compute offsets in PANEL SPACE
 
-            rtMap.offsetMin = _mapRT.offsetMin + GPSToMapPos(waypointGPS.x, waypointGPS.y);
+            rtMap.offsetMin = mapRT.offsetMin + GpsToMapPos(waypointGPS.x, waypointGPS.y);
             rtMap.offsetMax = rtMap.offsetMin;
             offsets.Add(rtMap.offsetMin);
-            // _lineRenderer.SetPosition(i, OffsetToPos(rtMap.offsetMin));
         }
-        offsets.Add(_curlocRT.offsetMin);
+        offsets.Add(currLocRT.offsetMin);
 
-        // _lineRenderer.SetPosition(numWaypoints, OffsetToPos(_curlocRT.offsetMin));
         List<List<Vector3>> routes = GetRoute(offsets);
         if (routes.Count > segmentObjs.Count)
         {
@@ -262,8 +253,8 @@ public class MapController : MRTKBaseInteractable
         List<Vector3> positions = new List<Vector3>();
 
         bool prevInScope = true;
-        float maxHeight = _canvasHalfHeight * 0.97f;
-        float maxWidth = _canvasHalfWidth * 1.01f;
+        float maxHeight = canvasHalfHeight * 0.97f;
+        float maxWidth = canvasHalfWidth * 1.01f;
 
         bool IsWithinScope(Vector2 offset)
         {
@@ -326,67 +317,66 @@ public class MapController : MRTKBaseInteractable
                     {
                         // Pan
                         firstPosition = localTouchPosition;
-                        lastPosition = localTouchPosition;
-                        initialOffsetMin = _mapRT.offsetMin;
-                        initialOffsetMax = _mapRT.offsetMax;
+                        initialOffsetMin = mapRT.offsetMin;
+                        initialOffsetMax = mapRT.offsetMax;
 
                         // Focus
-                        _focusMode = MapFocusMode.MapNoFocus;
+                        focusMode = MapFocusMode.MapNoFocus;
 
                         // Marker
-                        if (_actionMode == MapActionMode.AddMarker)
+                        if (actionMode == MapActionMode.AddMarker)
                         {
-                            switch (_selectedMarkerType)
+                            switch (selectedMarkerType)
                             {
                                 case MarkerType.Obstacle:
-                                    _newMarkerOnMap = Instantiate(obstaclePrefab, _markersTF);
-                                    _newMarkerOnCompass = Instantiate(obstaclePrefab, _compassMarkersRT);
+                                    newMarkerOnMap = Instantiate(obstaclePrefab, markersTf);
+                                    newMarkerOnCompass = Instantiate(obstaclePrefab, compassMarkersRT);
                                     break;
                                 case MarkerType.Rover:
-                                    _newMarkerOnMap = Instantiate(roverPrefab, _markersTF);
-                                    _newMarkerOnCompass = Instantiate(roverPrefab, _compassMarkersRT);
+                                    newMarkerOnMap = Instantiate(roverPrefab, markersTf);
+                                    newMarkerOnCompass = Instantiate(roverPrefab, compassMarkersRT);
                                     break;
                                 default:
-                                    _newMarkerOnMap = Instantiate(POIPrefab, _markersTF);
-                                    _newMarkerOnCompass = Instantiate(POIPrefab, _compassMarkersRT);
+                                    newMarkerOnMap = Instantiate(poiPrefab, markersTf);
+                                    newMarkerOnCompass = Instantiate(poiPrefab, compassMarkersRT);
                                     break;
                             }
-                            _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                            _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-                            _markers.Add(_newMarkerOnMap,
-								(_selectedMarkerType,
-                                    MapPosToGPS(firstPosition),
+                            newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+                            newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+                            markers.Add(newMarkerOnMap,
+								(selectedMarkerType,
+                                    MapPosToGps(firstPosition),
                                     //(MapToWorldPos(firstPosition),
-                                    _newMarkerOnMap,
-                                    _newMarkerOnCompass,
-                                    _newMarkerOnMap.GetComponent<RectTransform>(),
-                                    _newMarkerOnCompass.GetComponent<RectTransform>()
+                                    newMarkerOnMap,
+                                    newMarkerOnCompass,
+                                    newMarkerOnMap.GetComponent<RectTransform>(),
+                                    newMarkerOnCompass.GetComponent<RectTransform>()
                                     ));
-                            _actionMode = MapActionMode.EditMarker;
+                            actionMode = MapActionMode.EditMarker;
                         }
-                        else if (_actionMode != MapActionMode.EditMarker)
+                        else if (actionMode != MapActionMode.EditMarker)
                         {
                             float minDist = markerEditSensitivity + 1;
-                            foreach (var kvp in _markers)
+                            foreach (var kvp in markers)
                             {
-                                float dist = (kvp.Value.Item2 - MapPosToGPS(firstPosition)).magnitude;
+                                float dist = (kvp.Value.Item2 - MapPosToGps(firstPosition)).magnitude;
                                 if (dist < minDist)
                                 {
                                     minDist = dist;
-                                    _newMarkerOnMap = kvp.Key;
-                                    _newMarkerOnCompass = kvp.Value.Item3;
+                                    newMarkerOnMap = kvp.Key;
+                                    newMarkerOnCompass = kvp.Value.Item3;
                                 }
                             }
 
                             if (minDist < markerEditSensitivity)
                             {
-                                _actionButtons.SetActive(true);
-                                _actionMode = MapActionMode.SelectMarker;
+                                actionButtons.SetActive(true);
+                                actionMode = MapActionMode.SelectMarker;
                             }
                             else
                             {
-                                _newMarkerOnMap = null;
-                                _newMarkerOnCompass = null;
+                                newMarkerOnMap = null;
+                                newMarkerOnCompass = null;
                                 if (voiceMemoObj.activeSelf) {
                                     voiceMemoObj.SetActive(false);
                                 }
@@ -397,22 +387,22 @@ public class MapController : MRTKBaseInteractable
                     // Update the offsets (top, right, bottom, left) based on the change in position
                     Vector2 delta = localTouchPosition - firstPosition;
 
-                    switch (_actionMode)
+                    switch (actionMode)
                     {
                         case MapActionMode.Pan:
-                            _mapRT.offsetMin = initialOffsetMin + delta;
-                            _mapRT.offsetMax = _mapRT.offsetMin;
+                            mapRT.offsetMin = initialOffsetMin + delta;
+                            mapRT.offsetMax = mapRT.offsetMin;
                             break;
                         case MapActionMode.EditMarker:
-                            var markerItem = _markers[_newMarkerOnMap];
-                            markerItem.Item2 = MapPosToGPS(localTouchPosition);
-                            _markers[_newMarkerOnMap] = markerItem;
+                            var markerItem = markers[newMarkerOnMap];
+                            markerItem.Item2 = MapPosToGps(localTouchPosition);
+                            markers[newMarkerOnMap] = markerItem;
                             break;
                         case MapActionMode.SelectMarker:
-                            var newPos = _newMarkerOnMap.transform.position;
+                            var newPos = newMarkerOnMap.transform.position;
                             newPos.z -= 0.02f;
                             newPos.y -= 0.02f;
-                            _actionButtons.transform.position = newPos;
+                            actionButtons.transform.position = newPos;
                             break;
                     }
 
@@ -425,8 +415,6 @@ public class MapController : MRTKBaseInteractable
                     {
                         lastPositions.Add(interactor, localTouchPosition);
                     }
-
-                    _lastTouchPosition = localTouchPosition;
 
                     break;
                 }
@@ -444,20 +432,20 @@ public class MapController : MRTKBaseInteractable
     public void MapZoomInCallback()
     {
         zoomIndex = zoomIndex >= zoomSeries.Count - 1 ? zoomIndex : zoomIndex + 1;
-        _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
     }
 
     public void MapZoomOutCallback()
     {
         zoomIndex = zoomIndex <= 0 ? zoomIndex : zoomIndex - 1;
-        _mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
+        mapRT.localScale = getLocalScale(zoomSeries[zoomIndex]);
     }
 
     /************* Focus **************/
     public void MapFocusCallback()
     {
         MapToggleFocusMode();
-        switch (_focusMode)
+        switch (focusMode)
         {
             case MapFocusMode.MapNoFocus:
                 MapRestoreLastRotation();
@@ -470,22 +458,22 @@ public class MapController : MRTKBaseInteractable
     }
     private void RotateMapWithUser()
     {
-        Vector3 userLook = _mainCamera.transform.forward;
+        Vector3 userLook = mainCamera.transform.forward;
 
-        // Rotate map so that curloc points up
+        // Rotate map so that currLoc points up
         userLook.y = 0.0f;
         float lookAngleZDeg = Vector3.Angle(Vector3.forward, userLook) * Mathf.Sign(userLook.x);
-        _mapRT.localRotation = Quaternion.Euler(0.0f, 0.0f, lookAngleZDeg);
+        mapRT.localRotation = Quaternion.Euler(0.0f, 0.0f, lookAngleZDeg);
     }
 
     private void CenterMapAtUser()
     {
         // Vector3 userPos = _mainCamera.transform.position;
 		// Vector2 userPosMap = WorldToMapPos(userPos);
-		Vector2 GPSCoords = getGPSCoords();
-		Vector2 userPosMap = GPSToMapPos(GPSCoords.x, GPSCoords.y);
-        _mapRT.offsetMin = -userPosMap;
-        _mapRT.offsetMax = _mapRT.offsetMin;
+		Vector2 gpsCoords = GetGpsCoords();
+		Vector2 userPosMap = GpsToMapPos(gpsCoords.x, gpsCoords.y);
+        mapRT.offsetMin = -userPosMap;
+        mapRT.offsetMax = mapRT.offsetMin;
     }
 
     private void AlignMapWithUser()
@@ -496,18 +484,18 @@ public class MapController : MRTKBaseInteractable
 
     private void MapToggleFocusMode()
     {
-        int newMode = ((int)_focusMode + 1) % (int)MapFocusMode.NumMapFocusModes;
-        _focusMode = (MapFocusMode)newMode;
+        int newMode = ((int)focusMode + 1) % (int)MapFocusMode.NumMapFocusModes;
+        focusMode = (MapFocusMode)newMode;
     }
 
     private void MapStoreLastRotation()
     {
-        _mapLastRotZDeg = _mapRT.localEulerAngles.z;
+        mapLastRotZDeg = mapRT.localEulerAngles.z;
     }
 
     private void MapRestoreLastRotation()
     {
-        _mapRT.localRotation = Quaternion.Euler(0, 0, _mapLastRotZDeg);
+        mapRT.localRotation = Quaternion.Euler(0, 0, mapLastRotZDeg);
     }
     /***************************/
 
@@ -515,12 +503,12 @@ public class MapController : MRTKBaseInteractable
     {
         base.OnSelectEntered(args);
 
-        if (_actionButtons.activeSelf)
+        if (actionButtons.activeSelf)
         {
-            _actionButtons.SetActive(false);
-            _actionMode = MapActionMode.Pan;
-            _newMarkerOnMap = null;
-            _newMarkerOnCompass = null;
+            actionButtons.SetActive(false);
+            actionMode = MapActionMode.Pan;
+            newMarkerOnMap = null;
+            newMarkerOnCompass = null;
         }
     }
 
@@ -528,11 +516,11 @@ public class MapController : MRTKBaseInteractable
     {
         base.OnSelectExited(args);
 
-        if (_actionMode == MapActionMode.EditMarker)
+        if (actionMode == MapActionMode.EditMarker)
         {
-            _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
-            _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
-            _actionMode = MapActionMode.Pan;
+            newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
+            newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
+            actionMode = MapActionMode.Pan;
         }
 
         // Remove the interactor from our last-position collection when it leaves.
@@ -542,106 +530,102 @@ public class MapController : MRTKBaseInteractable
     /************* Marker **************/
     public void OnWaypointSelectEnter()
     {
-        _selectedMarkerType = MarkerType.Waypoint;
-        _buttonPressedTime = Time.time;
+        selectedMarkerType = MarkerType.Waypoint;
+        buttonPressedTime = Time.time;
     }
     public void OnObstacleSelectEnter()
     {
-        _selectedMarkerType = MarkerType.Obstacle;
-        _buttonPressedTime = Time.time;
+        selectedMarkerType = MarkerType.Obstacle;
+        buttonPressedTime = Time.time;
     }
     public void OnPOISelectEnter()
     {
-        _selectedMarkerType = MarkerType.POI;
-        _buttonPressedTime = Time.time;
+        selectedMarkerType = MarkerType.POI;
+        buttonPressedTime = Time.time;
     }
     public void OnRoverSelectEnter()
     {
-        _selectedMarkerType = MarkerType.Rover;
-        _buttonPressedTime = Time.time;
+        selectedMarkerType = MarkerType.Rover;
+        buttonPressedTime = Time.time;
     }
 
     public void OnMarkerMovePressed()
     {
-        _newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-        _newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
-        _actionMode = MapActionMode.EditMarker;
-        _actionButtons.SetActive(false);
+        newMarkerOnMap.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+        newMarkerOnCompass.GetComponent<RawImage>().color = new Color(1, 1, 1, 0.5f);
+        actionMode = MapActionMode.EditMarker;
+        actionButtons.SetActive(false);
     }
 
     public void OnMarkerDeletePressed()
     {
-        if (_navigationOn && _navigateTo == _newMarkerOnMap.GetComponent<RectTransform>())
+        if (navigationOn && navigateTo == newMarkerOnMap.GetComponent<RectTransform>())
         {
-            _navigationOn = false;
-            _navigateTo = null;
-            _lineRenderer.positionCount = 0;
+            navigationOn = false;
+            navigateTo = null;
+            markerLineRenderer.positionCount = 0;
         }
-        _markers.Remove(_newMarkerOnMap);
-        Destroy(_newMarkerOnMap);
-        Destroy(_newMarkerOnCompass);
-        _actionMode = MapActionMode.Pan;
-        _actionButtons.SetActive(false);
+        markers.Remove(newMarkerOnMap);
+        Destroy(newMarkerOnMap);
+        Destroy(newMarkerOnCompass);
+        actionMode = MapActionMode.Pan;
+        actionButtons.SetActive(false);
     }
 
     public void OnMarkerNavigatePressed()
     {
-        _navigationOn = !_navigationOn;
-        _navigateTo = _navigationOn ? _newMarkerOnMap.GetComponent<RectTransform>() : null;
-        _lineRenderer.positionCount = _navigationOn ? 2 : 0;
-        _actionMode = MapActionMode.Pan;
-        _actionButtons.SetActive(false);
+        navigationOn = !navigationOn;
+        navigateTo = navigationOn ? newMarkerOnMap.GetComponent<RectTransform>() : null;
+        markerLineRenderer.positionCount = navigationOn ? 2 : 0;
+        actionMode = MapActionMode.Pan;
+        actionButtons.SetActive(false);
     }
 
     private Vector3 OffsetToPos(Vector2 offset)
     {
-        Vector3 pos = _panelTf.position;
-        Quaternion rot = _panelTf.rotation;
+        Vector3 pos = panelTf.position;
+        Quaternion rot = panelTf.rotation;
 
-        pos += 0.088f * offset.x / _canvasHalfWidth * (rot * Vector3.right);
-        pos += 0.070f * offset.y / _canvasHalfHeight * (rot * Vector3.up);
-        pos += 0.015f * (_mainCamera.transform.position - pos);
+        pos += 0.088f * offset.x / canvasHalfWidth * (rot * Vector3.right);
+        pos += 0.070f * offset.y / canvasHalfHeight * (rot * Vector3.up);
+        pos += 0.006f * (mainCamera.transform.position - pos);
 
         return pos;
     }
 
     private void Navigate()
     {
-        Vector3 mapPos = _panelTf.position;
-        _lineRenderer.positionCount = 2;
-
-        List<Vector2> offsets = new List<Vector2> { _navigateTo.offsetMin, _curlocRT.offsetMin };
-        _lineRenderer.SetPositions(GetRoute(offsets)[0].ToArray());
-        //_lineRenderer.SetPosition(0, OffsetToPos(_curlocRT.offsetMin));
-        //_lineRenderer.SetPosition(1, OffsetToPos(_navigateTo.offsetMin));
+        markerLineRenderer.positionCount = 2;
+        List<Vector2> offsets = new List<Vector2> { navigateTo.offsetMin, currLocRT.offsetMin };
+        markerLineRenderer.SetPositions(GetRoute(offsets)[0].ToArray());
     }
 
     public void OnMarkerButtonSelectExit()
     {
-        float delta = Time.time - _buttonPressedTime;
+        float delta = Time.time - buttonPressedTime;
         if (delta > 0.7f)
         {
-            _actionMode = MapActionMode.AddMarker;
+            actionMode = MapActionMode.AddMarker;
         }
         else
         {
-            switch (_selectedMarkerType)
+            switch (selectedMarkerType)
             {
                 // case MarkerType.Waypoint:
                 //     _waypointDisabled.SetActive(!_waypointDisabled.activeSelf);
                 //     showMarker[MarkerType.Waypoint] = !_waypointDisabled.activeSelf;
                 //     break;
                 case MarkerType.Obstacle:
-                    _obstacleDisabled.SetActive(!_obstacleDisabled.activeSelf);
-                    showMarker[MarkerType.Obstacle] = !_obstacleDisabled.activeSelf;
+                    obstacleDisabled.SetActive(!obstacleDisabled.activeSelf);
+                    showMarker[MarkerType.Obstacle] = !obstacleDisabled.activeSelf;
                     break;
                 case MarkerType.POI:
-                    _POIDisabled.SetActive(!_POIDisabled.activeSelf);
-                    showMarker[MarkerType.POI] = !_POIDisabled.activeSelf;
+                    poiDisabled.SetActive(!poiDisabled.activeSelf);
+                    showMarker[MarkerType.POI] = !poiDisabled.activeSelf;
                     break;
                 case MarkerType.Rover:
-                    _roverDisabled.SetActive(!_roverDisabled.activeSelf);
-                    showMarker[MarkerType.Rover] = !_roverDisabled.activeSelf;
+                    roverDisabled.SetActive(!roverDisabled.activeSelf);
+                    showMarker[MarkerType.Rover] = !roverDisabled.activeSelf;
                     break;
             }
         }
@@ -649,14 +633,14 @@ public class MapController : MRTKBaseInteractable
 
     private Vector3 MapToWorldPos(Vector2 mapPos)
     {
-        Vector2 mapOffset = _mapRT.offsetMin;
+        Vector2 mapOffset = mapRT.offsetMin;
         Vector3 worldPos = new Vector3(mapPos.x - mapOffset.x, 0, mapPos.y - mapOffset.y);
 
         // Un-rotate then scale to obtain the world space position
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
+        float mapRotZDeg = mapRT.localEulerAngles.z;
         worldPos = Quaternion.Euler(0.0f, mapRotZDeg, 0.0f) * worldPos;
 
-        float scaleW2M = 1000.0f * _mapRT.localScale.x;
+        float scaleW2M = 1000.0f * mapRT.localScale.x;
         worldPos /= scaleW2M;
 
         return worldPos;
@@ -664,8 +648,8 @@ public class MapController : MRTKBaseInteractable
 
     private Vector2 WorldToMapPos(Vector3 worldPos)
     {
-        float scaleW2M = 1000.0f * _mapRT.localScale.x;
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
+        float scaleW2M = 1000.0f * mapRT.localScale.x;
+        float mapRotZDeg = mapRT.localEulerAngles.z;
 
         // Rotate then scale to obtain the map space position
         Vector3 mapPos = Quaternion.Euler(0.0f, -mapRotZDeg, 0.0f) * worldPos;
@@ -674,76 +658,76 @@ public class MapController : MRTKBaseInteractable
         return new Vector2(mapPos.x, mapPos.z);
     }
 
-    private Vector2 GPSToMapPos(float latitudeDeg, float longitudeDeg)
+    private Vector2 GpsToMapPos(float latitudeDeg, float longitudeDeg)
     {
-        float du = (longitudeDeg - satCenterLongitude) / satLongitudeRange;  // -.5 ~ +.5 in horizontal map space
-        float dv = (latitudeDeg - satCenterLatitude) / satLatitudeRange;     // -.5 ~ +.5 in vertical map sapce
+        float du = (longitudeDeg - SatCenterLongitude) / SatLongitudeRange;  // -.5 ~ +.5 in horizontal map space
+        float dv = (latitudeDeg - SatCenterLatitude) / SatLatitudeRange;     // -.5 ~ +.5 in vertical map sapce
 
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
-        Vector3 mapPos = new Vector3(du, 0, dv) * _mapRT.localScale.x * _canvasRT.rect.height;
+        float mapRotZDeg = mapRT.localEulerAngles.z;
+        Vector3 mapPos =  mapRT.localScale.x * canvasRT.rect.height * new Vector3(du, 0, dv);
         mapPos = Quaternion.Euler(0.0f, -mapRotZDeg, 0.0f) * mapPos;
 
         return new Vector2(mapPos.x, mapPos.z);
     }
 
-	// Acutually: PanelPos to GPS
-    private Vector2 MapPosToGPS(Vector2 mapPos)
+	// Actually: PanelPos to GPS
+    private Vector2 MapPosToGps(Vector2 mapPos)
     {
-        Vector2 mapOffset = _mapRT.offsetMin;
+        Vector2 mapOffset = mapRT.offsetMin;
         Vector3 worldPos = new Vector3(mapPos.x - mapOffset.x, 0, mapPos.y - mapOffset.y);
 
         // Un-rotate then scale to obtain the world space position
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
+        float mapRotZDeg = mapRT.localEulerAngles.z;
         worldPos = Quaternion.Euler(0.0f, mapRotZDeg, 0.0f) * worldPos;
 
-		worldPos /= (_mapRT.localScale.x * _canvasRT.rect.height);  // (du, 0, dv) in GPSToMapPos
+		worldPos /= (mapRT.localScale.x * canvasRT.rect.height);  // (du, 0, dv) in GPSToMapPos
 
-		float longitudeDeg = worldPos.x * satLongitudeRange + satCenterLongitude;
-		float latitudeDeg = worldPos.z * satLatitudeRange + satCenterLatitude;
+		float longitudeDeg = worldPos.x * SatLongitudeRange + SatCenterLongitude;
+		float latitudeDeg = worldPos.z * SatLatitudeRange + SatCenterLatitude;
 
         return new Vector2(latitudeDeg, longitudeDeg);
     }
 
     // For simulation in Unity
-    private Vector2 getGPSCoords()
+    private Vector2 GetGpsCoords()
     {
-        Vector3 worldPos = _mainCamera.transform.position;
-        Vector2 gpsCoords = new Vector2(satCenterLatitude, satCenterLongitude);
+        Vector3 worldPos = mainCamera.transform.position;
+        Vector2 gpsCoords = new Vector2(SatCenterLatitude, SatCenterLongitude);
         gpsCoords += 5e-5f * new Vector2(worldPos.z, worldPos.x);
         return gpsCoords;
     }
 
     private void UpdateMarkers()
     {
-        float compassWidth = _compassRT.rect.width / 360.0f;
+        float compassWidth = compassRT.rect.width / 360.0f;
 
         // Vector3 userPos = Camera.main.transform.position;
-        Vector2 userGPS = getGPSCoords();
-        Vector3 userLook = _mainCamera.transform.forward;
+        Vector2 userGps = GetGpsCoords();
+        Vector3 userLook = mainCamera.transform.forward;
         userLook.y = 0.0f;
 
 		/************* CurLoc ************/
 		// Rotate CurLoc
         float lookAngleZDeg = Vector3.Angle(Vector3.forward, userLook) * Mathf.Sign(userLook.x);
-        float mapRotZDeg = _mapRT.localEulerAngles.z;
-        _curlocRT.localRotation = Quaternion.Euler(0, 0, mapRotZDeg - lookAngleZDeg);
+        float mapRotZDeg = mapRT.localEulerAngles.z;
+        currLocRT.localRotation = Quaternion.Euler(0, 0, mapRotZDeg - lookAngleZDeg);
 		// Translate CurLoc
-		Vector2 gpsCoords = getGPSCoords();
-        _curlocRT.offsetMin = _mapRT.offsetMin + GPSToMapPos(gpsCoords.x, gpsCoords.y);
-        _curlocRT.offsetMax = _curlocRT.offsetMin;
+		Vector2 gpsCoords = GetGpsCoords();
+        currLocRT.offsetMin = mapRT.offsetMin + GpsToMapPos(gpsCoords.x, gpsCoords.y);
+        currLocRT.offsetMax = currLocRT.offsetMin;
 		/*********************************/
 
 
-        foreach(var kvp in _markers)
+        foreach(var kvp in markers)
         {
-            // Vector3 posWorldspace = item.Item1;    // marker pos in world space
+            // Vector3 posWorldSpace = item.Item1;    // marker pos in world space
             GameObject obj = kvp.Key;
             MarkerType type = kvp.Value.Item1;
 
             obj.SetActive(showMarker[type]);
             if (!showMarker[type]) continue;
 
-            Vector2 markerGPS = kvp.Value.Item2;    // marker's GPS coords
+            Vector2 markerGps = kvp.Value.Item2;    // marker's GPS coords
             RectTransform rtMap = kvp.Value.Item5;
             RectTransform rtCompass = kvp.Value.Item6;
 
@@ -751,16 +735,16 @@ public class MapController : MRTKBaseInteractable
             // Note: pos gives offsets in rotated MAP SPACE,
             //       but we must compute offsets in PANEL SPACE
 
-            // rtMap.offsetMin = _mapRT.offsetMin + new Vector2(posMapspaceUnrot.x, posMapspaceUnrot.z);
-            rtMap.offsetMin = _mapRT.offsetMin + GPSToMapPos(markerGPS.x, markerGPS.y);
+            // rtMap.offsetMin = _mapRT.offsetMin + new Vector2(posMapSpaceUnrot.x, posMapSpaceUnrot.z);
+            rtMap.offsetMin = mapRT.offsetMin + GpsToMapPos(markerGps.x, markerGps.y);
             rtMap.offsetMax = rtMap.offsetMin;
 
             // Adjust marker position on compass
             // Given userGPS and markerGPS, get markerDir that points from user to marker
-            // Vector3 markerDir = posWorldspace - userPos;
+            // Vector3 markerDir = posWorldSpace - userPos;
             // markerDir.y = 0.0f;
-            Vector2 markerRelGPS = markerGPS - userGPS;  // delta (latitutude, longitude)
-            Vector3 markerDir = new Vector3(markerRelGPS.y, 0.0f, markerRelGPS.x);
+            Vector2 markerRelGps = markerGps - userGps;  // delta (latitude, longitude)
+            Vector3 markerDir = new Vector3(markerRelGps.y, 0.0f, markerRelGps.x);
             float angleToMarker = -Vector3.SignedAngle(markerDir, userLook, Vector3.up);
             rtCompass.offsetMin = new Vector2(angleToMarker * compassWidth, 0.0f);
             rtCompass.offsetMax = rtCompass.offsetMin;
@@ -778,13 +762,13 @@ public class MapController : MRTKBaseInteractable
         }
 
         if (recordingWaypoints) waypoints.Clear();
-        else _lineRenderer.positionCount = waypoints.Count + 1;
+        else markerLineRenderer.positionCount = waypoints.Count + 1;
     }
 
     public void VoiceMemoOnclick()
     {
-        _actionMode = MapActionMode.Pan;
-        _actionButtons.SetActive(false);
+        actionMode = MapActionMode.Pan;
+        actionButtons.SetActive(false);
         voiceMemoObj.SetActive(true);
     }
 }
