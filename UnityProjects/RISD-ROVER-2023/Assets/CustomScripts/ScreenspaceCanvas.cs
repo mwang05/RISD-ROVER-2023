@@ -21,7 +21,7 @@ public class ScreenspaceCanvas : MonoBehaviour
         _systemMessage.SetActive(true);
         _systemMessageText.text = msg;
         // TODO: wait for nsecs, then HideMessage
-
+        
     }
 
     public void HideMessage()
