@@ -32,7 +32,6 @@ public class MapController : MRTKBaseInteractable
 
 
     // Zoom
-    [SerializeField] private float maxZoom = 2.0f;
     private readonly List<float> zoomSeries = new List<float>{ 1, 2, 5, 10 };
     private int zoomIndex = 1;
 
@@ -43,7 +42,6 @@ public class MapController : MRTKBaseInteractable
 
     // Focus
     private MapFocusMode focusMode = MapFocusMode.MapNoFocus;
-    private float mapLastRotZDeg = 0.0f;
 
     // Marker
     enum MarkerType
@@ -480,14 +478,9 @@ public class MapController : MRTKBaseInteractable
         focusMode = (MapFocusMode)newMode;
     }
 
-    private void MapStoreLastRotation()
-    {
-        mapLastRotZDeg = mapRT.localEulerAngles.z;
-    }
-
     private void MapRestoreLastRotation()
     {
-        mapRT.localRotation = Quaternion.Euler(0, 0, mapLastRotZDeg);
+        mapRT.localRotation = Quaternion.Euler(0, 0, 0);
     }
     /***************************/
 
