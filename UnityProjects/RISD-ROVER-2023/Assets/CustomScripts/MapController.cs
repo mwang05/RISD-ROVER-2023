@@ -12,7 +12,7 @@ using RectTransform = UnityEngine.RectTransform;
 
 public class MapController : MRTKBaseInteractable
 {
-	public DateTime _startTimestamp { get; private set; }
+	public DateTime? _startTimestamp { get; private set; }
 
     enum MapFocusMode
     {
