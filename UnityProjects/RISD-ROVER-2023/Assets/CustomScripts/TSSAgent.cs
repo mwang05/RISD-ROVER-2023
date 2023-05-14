@@ -6,10 +6,13 @@ using TSS;
 public class TSSAgent : MonoBehaviour
 {
     TSSConnection tss;
-    string tssUri = "ws://10.1.77.194";
+    string tssUri = "ws://10.1.77.43:3001";
     private bool isConnecting = false;
     private bool connected = false;
     int msgCount = 0;
+
+    private GameObject EVA;
+    private TMPro.TMP_Text batteryPercentageText;
 
     private GameObject connectMsg;
 
@@ -17,7 +20,12 @@ public class TSSAgent : MonoBehaviour
     async void Start()
     {
         tss = new TSSConnection();
+        EVA = GameObject.Find("EVA");
+        batteryPercentageText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
         connectMsg = GameObject.Find("Connecting");
+        
+        connectMsg.SetActive(false);
+        EVA.SetActive(false);
         // Connect();
     }
 
@@ -26,7 +34,7 @@ public class TSSAgent : MonoBehaviour
     {
 
         // Updates the websocket once per frame
-        // if (connected) tss.Update();
+        if (connected) tss.Update();
         // else if (!isConnecting)
         // {
         //     isConnecting = true;
@@ -38,6 +46,7 @@ public class TSSAgent : MonoBehaviour
     public async void Connect()
     {
         isConnecting = true;
+        connectMsg.SetActive(true);
         var connecting = tss.ConnectToURI(tssUri);
         // Create a function that takes asing TSSMsg parameter and returns void. For example:
         // public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg) { ... }
@@ -46,6 +55,7 @@ public class TSSAgent : MonoBehaviour
         {
             msgCount++;
             Debug.Log("Message #" + msgCount + "\nMessage:\n " + JsonUtility.ToJson(telemMsg, prettyPrint: true));
+            
 
             // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
             if (telemMsg.GPS.Count > 0)
@@ -58,6 +68,8 @@ public class TSSAgent : MonoBehaviour
 
             if (telemMsg.EVA.Count > 0)
             {
+                // Debug.Log(telemMsg.EVA[telemMsg.EVA.Count - 1].batteryPercent);
+                UpdateEVA(telemMsg);
             }
         };
 
@@ -76,6 +88,7 @@ public class TSSAgent : MonoBehaviour
             Debug.Log("Websocket error occured: " + e);
             connected = false;
             isConnecting = false;
+            connectMsg.SetActive(false);
         };
 
         tss.OnClose += (e) =>
@@ -94,5 +107,13 @@ public class TSSAgent : MonoBehaviour
     public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg)
     {
         Debug.Log("Received the following telemetry data from the TSS:\n" + JsonUtility.ToJson(tssMsg, prettyPrint: true));
+    }
+
+    private void UpdateEVA(TSS.Msgs.TSSMsg tssMsg)
+    {
+        if (!EVA.activeSelf) return;
+
+        var eva = tssMsg.EVA[tssMsg.EVA.Count - 1];
+        batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
     }
 }
