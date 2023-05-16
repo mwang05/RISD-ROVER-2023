@@ -1,3 +1,5 @@
+using Microsoft.MixedReality.Toolkit;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -132,6 +134,8 @@ public class MarkerController : MonoBehaviour
         navigation = GameObject.Find("Navigation").GetComponent<Navigation>();
         voiceMemoObj = GameObject.Find("Voice Memo");
         voiceMemoObj.SetActive(false);
+
+        var panelTf = GameObject.Find("Map Panel").transform;
     }
 
     // Update is called once per frame
@@ -165,6 +169,7 @@ public class MarkerController : MonoBehaviour
             if (!showMarker[type]) continue;
 
             kvp.Value.Update(userGps, userLook);
+            Debug.Log(kvp.Value.MapMarkerRT.localPosition);
         }
     }
 

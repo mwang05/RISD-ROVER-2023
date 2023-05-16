@@ -70,7 +70,7 @@ public class Navigation : MonoBehaviour
         if (isNavigating)
         {
             List<Vector2> offsets = new List<Vector2> { destMarkerRT.offsetMin, currLocRT.offsetMin };
-            List<List<Vector3>> positions = GetRoute(offsets);
+            List<List<Vector3>> positions = GetRoute(offsets, false);
             if (positions.Count > 0) markerLr.SetPositions(positions[0].ToArray());
         }
         if (isRecording) RecordWaypoints();
@@ -136,7 +136,7 @@ public class Navigation : MonoBehaviour
         offsets.Add(currLocRT.offsetMin);
 
         // Obtain the navigation route and resize the number of segments
-        List<List<Vector3>> routes = GetRoute(offsets);
+        List<List<Vector3>> routes = GetRoute(offsets, true);
         if (routes.Count > segmentObjs.Count)
         {
             for (int i = 0; i < routes.Count - segmentObjs.Count; i++)
@@ -165,14 +165,14 @@ public class Navigation : MonoBehaviour
         }
     }
 
-    private List<List<Vector3>> GetRoute(List<Vector2> offsets)
+    private List<List<Vector3>> GetRoute(List<Vector2> offsets, bool isWayPoint)
     {
         List<List<Vector3>> segments = new List<List<Vector3>>();
         List<Vector3> positions = new List<Vector3>();
 
         bool prevInScope = true;
-        float maxHeight = canvasHalfHeight * 0.97f;
-        float maxWidth = canvasHalfWidth * 1.01f;
+        float maxHeight = canvasHalfHeight * 0.98f;
+        float maxWidth = canvasHalfWidth * 0.98f;
 
         bool IsWithinScope(Vector2 offset)
         {
@@ -186,7 +186,7 @@ public class Navigation : MonoBehaviour
             float deltaY = Math.Abs(outside.y) - maxHeight;
             float scale = deltaX > deltaY ? Math.Abs(deltaX / outsideToInside.x) : Math.Abs(deltaY / outsideToInside.y);
 
-            return OffsetToPos(outside + outsideToInside * scale);
+            return OffsetToPos(outside + outsideToInside * scale, isWayPoint);
         }
 
         for (int i = 0; i < offsets.Count; i++)
@@ -201,7 +201,7 @@ public class Navigation : MonoBehaviour
                     Vector3 prevIntersection = GetIntersectionWithBorder(offsets[i - 1], offsets[i]);
                     positions.Add(prevIntersection);
                 }
-                positions.Add(OffsetToPos(offsets[i]));
+                positions.Add(OffsetToPos(offsets[i], isWayPoint));
                 if (!nextInScope)
                 {
                     Vector3 nextIntersection = GetIntersectionWithBorder(offsets[i + 1], offsets[i]);
@@ -239,15 +239,14 @@ public class Navigation : MonoBehaviour
     }
 
     // Utility Function
-    private Vector3 OffsetToPos(Vector2 offset)
+    private Vector3 OffsetToPos(Vector2 offset, bool isWayPoint)
     {
-        Vector3 pos = panelTf.position;
-        Quaternion rot = panelTf.rotation;
+        if (!isWayPoint) offset -= mapRT.offsetMin;
 
-        pos += 0.088f * offset.x / canvasHalfWidth * (rot * Vector3.right);
-        pos += 0.070f * offset.y / canvasHalfHeight * (rot * Vector3.up);
-        pos += 0.010f * (mainCamera.transform.position - pos);
+        float c = isWayPoint ? 200f : 100f;
+        float xScale = c / canvasHalfWidth;
+        float yScale = c / canvasHalfWidth;
 
-        return pos;
+        return new Vector3(offset.x * xScale, offset.y * yScale, -25f);
     }
 }
