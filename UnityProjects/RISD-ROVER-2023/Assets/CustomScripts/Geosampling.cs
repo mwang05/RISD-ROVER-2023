@@ -104,7 +104,7 @@ public class Geosampling : MonoBehaviour
     {
         // Get timestamp since Egress starts
         // var deltaTime = DateTime.Now - _mapControllerScript._startTimestamp;
-        if (!_mapControllerScript._startTimestamp.HasValue)
+        if (!_mapControllerScript.StartTimestamp.HasValue)
         {
             String msg = "Cannot take Geosamples: Egress not finished yet.";
             Debug.Log(msg);
@@ -116,7 +116,7 @@ public class Geosampling : MonoBehaviour
 
         // Take N=3 photos, each 5 seconds apart
         IEnumerator coroutine = _geosamplingItems.Last().TakeNPhotos(
-            5, _mapControllerScript._startTimestamp.Value,
+            5, _mapControllerScript.StartTimestamp.Value,
             _ssCanvasScript, _mainPanel, 3);
         StartCoroutine(coroutine);
     }

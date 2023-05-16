@@ -387,7 +387,7 @@ public class MemoList : VirtualizedScrollRectList
 
     private void StartVoiceMemo()
     {
-        _currReco = Microphone.Start("", false, 600, 44100);  // cap 10 mins
+        _currReco = Microphone.Start(null, false, 600, 44100);  // cap 10 mins
         _currState = VoiceMemoState.MemoRecording;
         // _recordBut.image.sprite = recordOnSprite;
         _recordBtnImage.sprite = recordOnSprite;
