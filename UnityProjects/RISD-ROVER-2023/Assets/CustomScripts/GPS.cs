@@ -20,7 +20,7 @@ public class GPS : MonoBehaviour
     {
         mainCamera = Camera.main;
         mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
-        canvasRT = GameObject.Find("Canvas").GetComponent<RectTransform>();
+        canvasRT = GameObject.Find("Main Canvas").GetComponent<RectTransform>();
     }
 
     // For simulation in Unity

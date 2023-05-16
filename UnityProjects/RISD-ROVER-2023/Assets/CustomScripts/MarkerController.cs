@@ -169,7 +169,6 @@ public class MarkerController : MonoBehaviour
             if (!showMarker[type]) continue;
 
             kvp.Value.Update(userGps, userLook);
-            Debug.Log(kvp.Value.MapMarkerRT.localPosition);
         }
     }
 
