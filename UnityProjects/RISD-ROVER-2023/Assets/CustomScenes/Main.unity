@@ -17751,7 +17751,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   markerEditSensitivity: 0.000033
   mode: 3
-  roverSpeed: 0.00000001
+  roverSpeed: 0.000006
 --- !u!1 &1337559802
 GameObject:
   m_ObjectHideFlags: 0

@@ -99,10 +99,12 @@ public class MarkerController : MonoBehaviour
     private bool isNavigating;
 
     // Rover
-    [SerializeField] private float roverSpeed = 1e-6f;
+    [SerializeField] private float roverSpeed = 6e-6f;
     private GameObject roverPrefab;
     private bool hasRoverMarker;
     private bool isRoverMoving;
+    private const int UpdateAfterFrames = 20;
+    private int frameCt;
     private Marker roverMarker;
     private Marker rover;
 
@@ -149,29 +151,31 @@ public class MarkerController : MonoBehaviour
         rover = new Marker(MarkerType.Rover, roverGpsCoord);
     }
 
+    private void FixedUpdate()
+    {
+        if (!isRoverMoving) return;
+
+        frameCt = (frameCt + 1) % UpdateAfterFrames;
+        if (frameCt != 0) return;
+
+        Vector2 toTarget = roverMarker.GpsCoord - rover.GpsCoord;
+        if (toTarget.magnitude <= roverSpeed * 2)
+        {
+            rover.GpsCoord = roverMarker.GpsCoord;
+            markers.Remove(roverMarker.MapMarkerObj);
+            roverMarker.CleanUp();
+            roverMarker = null;
+            isRoverMoving = false;
+        }
+        else
+        {
+            rover.GpsCoord += roverSpeed * toTarget.normalized;
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (isRoverMoving)
-        {
-            Debug.Log("CurrLoc: " + gps.GetGpsCoords());
-            Debug.Log("Target: " + roverMarker.GpsCoord);
-            Debug.Log("Rover: " + rover.GpsCoord);
-            Vector2 toTarget = roverMarker.GpsCoord - rover.GpsCoord;
-            if (toTarget.magnitude < 1e-8f)
-            {
-                rover.GpsCoord = roverMarker.GpsCoord;
-                markers.Remove(roverMarker.MapMarkerObj);
-                roverMarker.CleanUp();
-                roverMarker = null;
-                isRoverMoving = false;
-            }
-            else
-            {
-                rover.GpsCoord += toTarget.normalized * Mathf.Min(toTarget.magnitude, roverSpeed);
-            }
-        }
-
         UpdateMarkers();
     }
 
