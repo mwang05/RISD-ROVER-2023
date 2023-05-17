@@ -8,9 +8,10 @@ using UnityEngine.UI;
 
 public enum MarkerType
 {
-    Obstacle,
+    POI,
     Rover,
-    POI
+    Obstacle,
+    RoverMarker,
 };
 public enum MarkerActionMode
 {
@@ -97,6 +98,14 @@ public class MarkerController : MonoBehaviour
     private Navigation navigation;
     private bool isNavigating;
 
+    // Rover
+    [SerializeField] private float roverSpeed = 1e-6f;
+    private GameObject roverPrefab;
+    private bool hasRoverMarker;
+    private bool isRoverMoving;
+    private Marker roverMarker;
+    private Marker rover;
+
     // Voice
     private GameObject voiceMemoObj;
 
@@ -111,15 +120,17 @@ public class MarkerController : MonoBehaviour
         markers = new Dictionary<GameObject, Marker>();
         prefabDict = new Dictionary<MarkerType, GameObject>
         {
-            { MarkerType.Obstacle, Resources.Load<GameObject>("CustomPrefabs/Obstacle") },
+            { MarkerType.POI,  Resources.Load<GameObject>("CustomPrefabs/POI Marker") },
             { MarkerType.Rover, Resources.Load<GameObject>("CustomPrefabs/Rover") },
-            { MarkerType.POI,  Resources.Load<GameObject>("CustomPrefabs/POI") }
+            { MarkerType.Obstacle, Resources.Load<GameObject>("CustomPrefabs/Obstacle Marker") },
+            { MarkerType.RoverMarker, Resources.Load<GameObject>("CustomPrefabs/Rover Marker") },
         };
         showMarker = new Dictionary<MarkerType, bool>
         {
+            { MarkerType.POI, true },
             { MarkerType.Obstacle, true },
             { MarkerType.Rover, true },
-            { MarkerType.POI, true }
+            { MarkerType.RoverMarker, true },
         };
         currLocRT = GameObject.Find("CurrLoc").GetComponent<RectTransform>();
         compassWidth = compassRT.rect.width / 360.0f;
@@ -134,13 +145,33 @@ public class MarkerController : MonoBehaviour
         navigation = GameObject.Find("Navigation").GetComponent<Navigation>();
         voiceMemoObj = GameObject.Find("Voice Memo");
         voiceMemoObj.SetActive(false);
-
-        var panelTf = GameObject.Find("Map Panel").transform;
+        Vector2 roverGpsCoord = new Vector2(GPS.SatCenterLatitude, GPS.SatCenterLongitude);
+        rover = new Marker(MarkerType.Rover, roverGpsCoord);
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isRoverMoving)
+        {
+            Debug.Log("CurrLoc: " + gps.GetGpsCoords());
+            Debug.Log("Target: " + roverMarker.GpsCoord);
+            Debug.Log("Rover: " + rover.GpsCoord);
+            Vector2 toTarget = roverMarker.GpsCoord - rover.GpsCoord;
+            if (toTarget.magnitude < 1e-8f)
+            {
+                rover.GpsCoord = roverMarker.GpsCoord;
+                markers.Remove(roverMarker.MapMarkerObj);
+                roverMarker.CleanUp();
+                roverMarker = null;
+                isRoverMoving = false;
+            }
+            else
+            {
+                rover.GpsCoord += toTarget.normalized * Mathf.Min(toTarget.magnitude, roverSpeed);
+            }
+        }
+
         UpdateMarkers();
     }
 
@@ -160,6 +191,9 @@ public class MarkerController : MonoBehaviour
         currLocRT.offsetMin = mapRT.offsetMin + gps.GpsToMapPos(userGps.x, userGps.y);
         currLocRT.offsetMax = currLocRT.offsetMin;
 		/*********************************/
+
+        // Rover
+        rover.Update(userGps, userLook);
 
         foreach(var kvp in markers)
         {
@@ -263,7 +297,7 @@ public class MarkerController : MonoBehaviour
     }
     public void OnRoverSelectEnter()
     {
-        selectedMarkerType = MarkerType.Rover;
+        selectedMarkerType = MarkerType.RoverMarker;
         buttonPressedTime = Time.time;
     }
 
@@ -290,9 +324,17 @@ public class MarkerController : MonoBehaviour
 
     public void OnMarkerNavigatePressed()
     {
-        isNavigating = !isNavigating;
-        if (isNavigating) navigation.StartMarkerNavigate(currMarker.MapMarkerRT);
-        else navigation.StopMarkerNavigate();
+        if (currMarker.Type != MarkerType.RoverMarker)
+        {
+            isNavigating = !isNavigating;
+            if (isNavigating) navigation.StartMarkerNavigate(currMarker.MapMarkerRT);
+            else navigation.StopMarkerNavigate();
+        }
+        else
+        {
+            roverMarker = currMarker;
+            isRoverMoving = true;
+        }
 
         actionButtons.SetActive(false);
         mode = MarkerActionMode.None;
@@ -323,9 +365,9 @@ public class MarkerController : MonoBehaviour
                     poiDisabled.SetActive(!poiDisabled.activeSelf);
                     showMarker[MarkerType.POI] = !poiDisabled.activeSelf;
                     break;
-                case MarkerType.Rover:
+                case MarkerType.RoverMarker:
                     roverDisabled.SetActive(!roverDisabled.activeSelf);
-                    showMarker[MarkerType.Rover] = !roverDisabled.activeSelf;
+                    showMarker[MarkerType.RoverMarker] = !roverDisabled.activeSelf;
                     break;
             }
         }

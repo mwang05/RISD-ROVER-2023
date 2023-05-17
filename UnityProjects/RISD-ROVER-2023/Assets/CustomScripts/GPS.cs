@@ -6,8 +6,8 @@ public class GPS : MonoBehaviour
 {
     /************* Satellite **************/
     // hard coded center
-    const float SatCenterLatitude  = 29.564575f;   // latitude at the center of the satellite image, in degree
-    const float SatCenterLongitude = -95.081164f;  // longitude at the center of the satellite image, in degree
+    public const float SatCenterLatitude  = 29.564575f;   // latitude at the center of the satellite image, in degree
+    public const float SatCenterLongitude = -95.081164f;  // longitude at the center of the satellite image, in degree
     // hard coded scale
     const float SatLatitudeRange = 0.002216f;  // the satellite image covers this much latitudes in degree
     const float SatLongitudeRange = 0.00255f;  // the satellite image covers this much longitudes in degree
