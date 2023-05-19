@@ -26,6 +26,9 @@ public class TSSAgent : MonoBehaviour
     private TMPro.TMP_Text h2oGasPressureText, h2oLiquidPressureText, suitPressureText, fanRateText; 
     private TMPro.TMP_Text EEPressure, EETemperature, batteryTimeText, batteryCapacityText;
 
+    private GameObject egress;
+    private EgressController egressController;
+
     private GameObject connectMsg;
 
     // Start is called before the first frame update
@@ -55,6 +58,8 @@ public class TSSAgent : MonoBehaviour
         connectMsg = GameObject.Find("Connecting");
         connectMsg.SetActive(false);
         EVA.SetActive(false);
+        egress = GameObject.Find("Egress");
+        egressController = egress.GetComponent<EgressController>();
         // Connect();
     }
 
@@ -95,6 +100,11 @@ public class TSSAgent : MonoBehaviour
             if (telemMsg.simulationStates != null)
             {
                 UpdateEVA(telemMsg.simulationStates);
+            }
+
+            if (telemMsg.uiaMsg != null && egress.activeSelf)
+            {
+                egressController.UIAUpdateCallback(telemMsg.uiaMsg);
             }
         };
 
