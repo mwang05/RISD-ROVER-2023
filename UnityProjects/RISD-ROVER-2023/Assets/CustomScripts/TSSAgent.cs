@@ -6,11 +6,17 @@ using TSS.Msgs;
 
 public class TSSAgent : MonoBehaviour
 {
+    // TSS related information
     TSSConnection tss;
-    string tssUri = "ws://192.168.50.10:3001";
+    private const string tssUri = "ws://192.168.50.10:3001";
+    private const string team_name = "";
+    private const string username = "";
+    private const string university = "";
+    private const string user_guid = "";
+    
+    
     private bool isConnecting = false;
     private bool connected = false;
-    private int gpsMsgCount, imuMsgCount, evaMsgCount;
 
     private MarkerController markerController;
 
@@ -70,27 +76,25 @@ public class TSSAgent : MonoBehaviour
     {
         isConnecting = true;
         connectMsg.SetActive(true);
-        var connecting = tss.ConnectToURI(tssUri);
+        var connecting = tss.ConnectToURI(tssUri, team_name, username, university, user_guid);
         // Create a function that takes asing TSSMsg parameter and returns void. For example:
         // public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg) { ... }
         // Then just subscribe to the OnTSSTelemetryMsg
         tss.OnTSSTelemetryMsg += (telemMsg) =>
         {
             // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
-            if (telemMsg.GPS.Count != gpsMsgCount)
+            if (telemMsg.gpsMsg != null)
             {
-                UpdateGPS(telemMsg.GPS[gpsMsgCount]);
-                gpsMsgCount = telemMsg.GPS.Count;
+                UpdateGPS(telemMsg.gpsMsg);
             }
 
-            if (telemMsg.IMU.Count != imuMsgCount)
+            if (telemMsg.imuMsg != null)
             {
             }
 
-            if (telemMsg.EVA.Count != evaMsgCount)
+            if (telemMsg.simulationStates != null)
             {
-                // UpdateEVA(telemMsg.EVA[evaMsgCount]);
-                evaMsgCount = telemMsg.EVA.Count;
+                UpdateEVA(telemMsg.simulationStates);
             }
         };
 
@@ -130,15 +134,13 @@ public class TSSAgent : MonoBehaviour
         Debug.Log("Received the following telemetry data from the TSS:\n" + JsonUtility.ToJson(tssMsg, prettyPrint: true));
     }
 
-    private void UpdateEVA(TSS.Msgs.TSSMsg tssMsg)
+    private void UpdateEVA(SimulationStates eva)
     {
         if (!EVA.activeSelf) return;
 
-        var eva = tssMsg.EVA[tssMsg.EVA.Count - 1];
+        timerText.text = string.Format("{00:00:00}", eva.battery_percentage);
         
-        timerText.text = string.Format("{00:00:00}", eva.batteryPercent);
-        
-        heartRateText.text = eva.heart_bpm.ToString("###bpm");
+        heartRateText.text = eva.heart_rate.ToString("###bpm");
 
         POPressureText.text = eva.p_o2.ToString("###%");
         PORateText.text = eva.rate_o2.ToString("###%");
