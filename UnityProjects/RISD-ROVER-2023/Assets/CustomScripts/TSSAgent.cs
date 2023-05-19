@@ -6,7 +6,7 @@ using TSS;
 public class TSSAgent : MonoBehaviour
 {
     TSSConnection tss;
-    string tssUri = "ws://10.1.77.43:3001";
+    string tssUri = "ws://192.168.50.10:3001";
     private bool isConnecting = false;
     private bool connected = false;
     int msgCount = 0;
@@ -114,6 +114,8 @@ public class TSSAgent : MonoBehaviour
         if (!EVA.activeSelf) return;
 
         var eva = tssMsg.EVA[tssMsg.EVA.Count - 1];
+        
         batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
+        // batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
     }
 }
