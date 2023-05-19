@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 
+
+
 public enum MarkerType
 {
     POI,
@@ -72,6 +74,23 @@ public class MarkerController : MonoBehaviour
             MapMarkerObj.GetComponent<RawImage>().color = new Color(1, 1, 1, opacity);
             compassMarkerObj.GetComponent<RawImage>().color = new Color(1, 1, 1, opacity);
         }
+
+        public void Hide()
+        {
+            MapMarkerObj.SetActive(false);
+            compassMarkerObj.SetActive(false);
+        }
+
+        public void Show()
+        {
+            MapMarkerObj.SetActive(true);
+            compassMarkerObj.SetActive(true);
+        }
+
+        public bool IsHidden()
+        {
+            return !MapMarkerObj.activeSelf || !compassMarkerObj.activeSelf;
+        }
     }
 
     [SerializeField] private float markerEditSensitivity = 0.000033f;
@@ -107,6 +126,19 @@ public class MarkerController : MonoBehaviour
     private int frameCt;
     private Marker roverMarker;
     private Marker rover;
+    
+    List<Vector2> InitialRoverMarkerLocs = new List<Vector2>
+    {
+        new Vector2(29.5648150f, -95.0817410f),
+        new Vector2(29.5646824f, -95.0811564f),
+        new Vector2(29.5650460f, -95.0810944f),
+        new Vector2(29.5645430f, -95.0516440f),
+        new Vector2(29.5648290f, -95.0813750f),
+        new Vector2(29.5647012f, -95.0813750f),
+        new Vector2(29.5651359f,-95.0807408f),
+        new Vector2(29.5651465f, -95.0814092f),
+        new Vector2(29.5648850f, -95.0808360f),
+    };
 
     // Voice
     private GameObject voiceMemoObj;
@@ -149,28 +181,20 @@ public class MarkerController : MonoBehaviour
         voiceMemoObj.SetActive(false);
         Vector2 roverGpsCoord = new Vector2(GPS.SatCenterLatitude, GPS.SatCenterLongitude);
         rover = new Marker(MarkerType.Rover, roverGpsCoord);
+        rover.Hide();
+
+        // Populate the map with initial rover markers
+        foreach (Vector2 gpsCoord in InitialRoverMarkerLocs)
+        {
+            Marker curr = new Marker(MarkerType.RoverMarker, gpsCoord);
+            markers.Add(curr.MapMarkerObj, curr);
+        }
     }
 
-    private void FixedUpdate()
+    public void SetRoverLocation(Vector2 loc)
     {
-        if (!isRoverMoving) return;
-
-        frameCt = (frameCt + 1) % UpdateAfterFrames;
-        if (frameCt != 0) return;
-
-        Vector2 toTarget = roverMarker.GpsCoord - rover.GpsCoord;
-        if (toTarget.magnitude <= roverSpeed * 2)
-        {
-            rover.GpsCoord = roverMarker.GpsCoord;
-            markers.Remove(roverMarker.MapMarkerObj);
-            roverMarker.CleanUp();
-            roverMarker = null;
-            isRoverMoving = false;
-        }
-        else
-        {
-            rover.GpsCoord += roverSpeed * toTarget.normalized;
-        }
+        if (rover.IsHidden()) rover.Show();
+        rover.GpsCoord = loc;
     }
 
     // Update is called once per frame
