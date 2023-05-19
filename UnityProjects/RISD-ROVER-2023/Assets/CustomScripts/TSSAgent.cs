@@ -142,30 +142,30 @@ public class TSSAgent : MonoBehaviour
         
         heartRateText.text = eva.heart_rate.ToString("###bpm");
 
-        POPressureText.text = eva.p_o2.ToString("###%");
-        PORateText.text = eva.rate_o2.ToString("###%");
-        POTimeText.text = string.Format("{00:00:00}", eva.t_oxygen);
-        POPrecentText.text = eva.t_oxygenPrimary.ToString("###%");
+        POPressureText.text = eva.o2_pressure.ToString("###%");
+        PORateText.text = eva.o2_rate.ToString("###%");
+        POTimeText.text = string.Format("{00:00:00}", eva.oxygen_primary_time);
+        POPrecentText.text = eva.primary_oxygen.ToString("###%");
 
-        SOPessureText.text = eva.p_sop.ToString("###psia");
-        SORateText.text = eva.rate_sop.ToString("#.#psi/min");
-        SOTimeText.text = string.Format("{00:00:00}", eva.t_oxygen);
-        SOPercentText.text = eva.t_oxygenSec.ToString("###%");
+        SOPessureText.text = eva.sop_pressure.ToString("###psia");
+        SORateText.text = eva.sop_rate.ToString("#.#psi/min");
+        SOTimeText.text = string.Format("{00:00:00}", eva.oxygen_secondary_time);
+        SOPercentText.text = eva.secondary_oxygen.ToString("###%");
 
-        h2oGasPressureText.text = eva.p_h2o_g.ToString("###psia");
+        h2oGasPressureText.text = eva.h2o_gas_pressure.ToString("###psia");
 
-        h2oLiquidPressureText.text = eva.p_h2o_l.ToString("###psia");
+        h2oLiquidPressureText.text = eva.h2o_liquid_pressure.ToString("###psia");
 
-        suitPressureText.text = eva.p_suit.ToString("#psid"); 
+        suitPressureText.text = eva.suits_pressure.ToString("#psid"); 
 
-        string v_fan_str = eva.v_fan.ToString("0F");
+        string v_fan_str = eva.fan_tachometer.ToString("0F");
         fanRateText.text = v_fan_str.Insert(v_fan_str.Length - 3, ",");
 
-        EEPressure.text = eva.p_sub.ToString("#psia");
-        EETemperature.text = eva.t_sub.ToString("##F");
+        EEPressure.text = eva.sub_pressure.ToString("#psia");
+        EETemperature.text = eva.temperature.ToString("##F");
 
-        batteryTimeText.text = string.Format("{00:00:00}", eva.t_battery);
-        batteryCapacityText.text = eva.cap_battery.ToString("##amp-hr");
+        batteryTimeText.text = string.Format("{00:00:00}", eva.battery_time_left);
+        batteryCapacityText.text = eva.battery_capacity.ToString("##amp-hr");
 
     }
 
