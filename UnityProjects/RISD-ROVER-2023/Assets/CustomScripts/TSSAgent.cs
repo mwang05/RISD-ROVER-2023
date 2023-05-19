@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TSS;
+using TSS.Msgs;
 
 public class TSSAgent : MonoBehaviour
 {
@@ -9,7 +10,9 @@ public class TSSAgent : MonoBehaviour
     string tssUri = "ws://192.168.50.10:3001";
     private bool isConnecting = false;
     private bool connected = false;
-    int msgCount = 0;
+    private int gpsMsgCount, imuMsgCount, evaMsgCount;
+
+    private MarkerController markerController;
 
     private GameObject EVA;
     private TMPro.TMP_Text batteryPercentageText;
@@ -20,6 +23,7 @@ public class TSSAgent : MonoBehaviour
     async void Start()
     {
         tss = new TSSConnection();
+        markerController = GameObject.Find("Markers").GetComponent<MarkerController>();
         EVA = GameObject.Find("EVA");
         batteryPercentageText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
         connectMsg = GameObject.Find("Connecting");
@@ -53,23 +57,21 @@ public class TSSAgent : MonoBehaviour
         // Then just subscribe to the OnTSSTelemetryMsg
         tss.OnTSSTelemetryMsg += (telemMsg) =>
         {
-            msgCount++;
-            Debug.Log("Message #" + msgCount + "\nMessage:\n " + JsonUtility.ToJson(telemMsg, prettyPrint: true));
-            
-
             // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
-            if (telemMsg.GPS.Count > 0)
+            if (telemMsg.GPS.Count != gpsMsgCount)
+            {
+                UpdateGPS(telemMsg.GPS[gpsMsgCount]);
+                gpsMsgCount = telemMsg.GPS.Count;
+            }
+
+            if (telemMsg.IMU.Count != imuMsgCount)
             {
             }
 
-            if (telemMsg.IMU.Count > 0)
+            if (telemMsg.EVA.Count != evaMsgCount)
             {
-            }
-
-            if (telemMsg.EVA.Count > 0)
-            {
-                // Debug.Log(telemMsg.EVA[telemMsg.EVA.Count - 1].batteryPercent);
-                UpdateEVA(telemMsg);
+                // UpdateEVA(telemMsg.EVA[evaMsgCount]);
+                evaMsgCount = telemMsg.EVA.Count;
             }
         };
 
@@ -117,5 +119,9 @@ public class TSSAgent : MonoBehaviour
         
         batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
         // batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
+    }
+
+    private void UpdateGPS(GPSMsg msg)
+    {
     }
 }
