@@ -12,7 +12,10 @@ public class TSSAgent : MonoBehaviour
     int msgCount = 0;
 
     private GameObject EVA;
-    private TMPro.TMP_Text batteryPercentageText;
+    private TMPro.TMP_Text timerText, heartRateText, POPressureText, PORateText, POTimeText, POPrecentText; 
+    private TMPro.TMP_Text SOPessureText, SORateText, SOTimeText, SOPercentText;
+    private TMPro.TMP_Text h2oGasPressureText, h2oLiquidPressureText, suitPressureText, fanRateText; 
+    private TMPro.TMP_Text EEPressure, EETemperature, batteryTimeText, batteryCapacityText;
 
     private GameObject connectMsg;
 
@@ -21,9 +24,25 @@ public class TSSAgent : MonoBehaviour
     {
         tss = new TSSConnection();
         EVA = GameObject.Find("EVA");
-        batteryPercentageText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
+        timerText = GameObject.Find("Timer").GetComponent<TMPro.TMP_Text>();
+        heartRateText = GameObject.Find("BPM").GetComponent<TMPro.TMP_Text>();
+        POPressureText = GameObject.Find("Primary Oxygen Pressure").GetComponent<TMPro.TMP_Text>();
+        PORateText = GameObject.Find("Primary Oxygen Rate").GetComponent<TMPro.TMP_Text>();
+        POTimeText = GameObject.Find("Primary Oxygen Time").GetComponent<TMPro.TMP_Text>();
+        POPrecentText = GameObject.Find("Primary Oxygen Percent").GetComponent<TMPro.TMP_Text>();
+        SOPessureText = GameObject.Find("Secondary Oxygen Pressure").GetComponent<TMPro.TMP_Text>();
+        SORateText = GameObject.Find("Secondary Oxygen Rate").GetComponent<TMPro.TMP_Text>();
+        SOTimeText = GameObject.Find("Secondary Oxygen Time").GetComponent<TMPro.TMP_Text>();
+        SOPercentText = GameObject.Find("Secondary Oxygen Percent").GetComponent<TMPro.TMP_Text>();
+        h2oGasPressureText = GameObject.Find("H2O Gas Pressure").GetComponent<TMPro.TMP_Text>();
+        h2oLiquidPressureText = GameObject.Find("H2O Liquid Pressure").GetComponent<TMPro.TMP_Text>();
+        suitPressureText = GameObject.Find("Suit Pressure").GetComponent<TMPro.TMP_Text>();
+        fanRateText = GameObject.Find("Fan Rate").GetComponent<TMPro.TMP_Text>();
+        EEPressure = GameObject.Find("External Environment Pressure").GetComponent<TMPro.TMP_Text>();
+        EETemperature = GameObject.Find("External Environment Temperature").GetComponent<TMPro.TMP_Text>();
+        batteryTimeText = GameObject.Find("Battery Time").GetComponent<TMPro.TMP_Text>();
+        batteryCapacityText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
         connectMsg = GameObject.Find("Connecting");
-        
         connectMsg.SetActive(false);
         EVA.SetActive(false);
         // Connect();
@@ -115,7 +134,34 @@ public class TSSAgent : MonoBehaviour
 
         var eva = tssMsg.EVA[tssMsg.EVA.Count - 1];
         
-        batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
-        // batteryPercentageText.text = string.Format("{0:0.00}", eva.batteryPercent);
+        timerText.text = string.Format("{00:00:00}", eva.batteryPercent);
+        
+        heartRateText.text = eva.heart_bpm.ToString("###bpm");
+
+        POPressureText.text = eva.p_o2.ToString("###%");
+        PORateText.text = eva.rate_o2.ToString("###%");
+        POTimeText.text = string.Format("{00:00:00}", eva.t_oxygen);
+        POPrecentText.text = eva.t_oxygenPrimary.ToString("###%");
+
+        SOPessureText.text = eva.p_sop.ToString("###psia");
+        SORateText.text = eva.rate_sop.ToString("#.#psi/min");
+        SOTimeText.text = string.Format("{00:00:00}", eva.t_oxygen);
+        SOPercentText.text = eva.t_oxygenSec.ToString("###%");
+
+        h2oGasPressureText.text = eva.p_h2o_g.ToString("###psia");
+
+        h2oLiquidPressureText.text = eva.p_h2o_l.ToString("###psia");
+
+        suitPressureText.text = eva.p_suit.ToString("#psid"); 
+
+        string v_fan_str = eva.v_fan.ToString("0F");
+        fanRateText.text = v_fan_str.Insert(v_fan_str.Length - 3, ",");
+
+        EEPressure.text = eva.p_sub.ToString("#psia");
+        EETemperature.text = eva.t_sub.ToString("##F");
+
+        batteryTimeText.text = string.Format("{00:00:00}", eva.t_battery);
+        batteryCapacityText.text = eva.cap_battery.ToString("##amp-hr");
+
     }
 }
