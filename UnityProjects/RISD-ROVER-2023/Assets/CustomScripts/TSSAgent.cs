@@ -148,7 +148,7 @@ public class TSSAgent : MonoBehaviour
     {
         if (!EVA.activeSelf) return;
 
-        timerText.text = string.Format("{00:00:00}", eva.battery_percentage);
+        timerText.text = string.Format("{00:00:00}", eva.timer);
         
         heartRateText.text = eva.heart_rate.ToString("###bpm");
 
