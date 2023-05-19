@@ -24,12 +24,28 @@ public class Geosampling : MonoBehaviour
         public int itemID;
         public String lithology;
         public List<GeosamplingPhoto> photos;
+        private const int scWidth = 1920;
+        private const int scHeight = 1080;
 
         public GeosamplingItem(String litho, int id)
         {
             lithology = litho;
             itemID = id;
             photos = new List<GeosamplingPhoto>();
+        }
+
+        private Texture2D GetScreenshot()
+        {
+            RenderTexture rt = new RenderTexture(scWidth, scHeight, 24);
+            mainCamera.targetTexture = rt;
+            Texture2D screenShot = new Texture2D(scWidth, scHeight, TextureFormat.RGB24, false);
+            mainCamera.Render();
+            RenderTexture.active = rt;
+            screenShot.ReadPixels(new Rect(0, 0, scWidth, scHeight), 0, 0); 
+            mainCamera.targetTexture = null;
+            RenderTexture.active = null;
+            Destroy(rt);
+            return screenShot;
         }
 
         public IEnumerator TakeNPhotos(int delaySec,
@@ -55,7 +71,7 @@ public class Geosampling : MonoBehaviour
                 ssCanvas.HideCountdown();
 
                 var timestamp = DateTime.Now - startTime;
-                var photoData = new Texture2D(400, 200);  // TODO: use camera
+                var photoData = GetScreenshot();  // TODO: use camera
                 var photo = new GeosamplingPhoto(timestamp, photoData);
                 photos.Add(photo);
 
@@ -80,24 +96,20 @@ public class Geosampling : MonoBehaviour
     private GameObject _mainPanel;  // hide during countdown
     private MapController _mapControllerScript;
     private ScreenspaceCanvas _ssCanvasScript;
+    private static Camera mainCamera;
 
     void Awake()
     {
         _mainPanel = GameObject.Find("Main Panel");
         _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
         _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
+        mainCamera = Camera.main;
     }
 
     // Start is called before the first frame update
     void Start()
     {
         _geosamplingItems = new List<GeosamplingItem>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     public void ScannerCallback()
@@ -117,7 +129,7 @@ public class Geosampling : MonoBehaviour
         // Take N=3 photos, each 5 seconds apart
         IEnumerator coroutine = _geosamplingItems.Last().TakeNPhotos(
             5, _mapControllerScript.StartTimestamp.Value,
-            _ssCanvasScript, _mainPanel, 3);
+            _ssCanvasScript, _mainPanel);
         StartCoroutine(coroutine);
     }
 
