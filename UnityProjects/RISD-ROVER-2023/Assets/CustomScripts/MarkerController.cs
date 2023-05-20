@@ -21,7 +21,6 @@ public enum MarkerActionMode
     Add,
     Edit,
     Select,
-    Memo
 }
 
 public class MarkerController : MonoBehaviour
@@ -101,13 +100,14 @@ public class MarkerController : MonoBehaviour
 
     private Camera mainCamera;
     private static GPS gps;
-
-    private GameObject obstacleDisabled, poiDisabled, roverDisabled;
+    
     private static Dictionary<MarkerType, GameObject> prefabDict;
     private Dictionary<MarkerType, bool> showMarker;
     private Dictionary<GameObject, Marker> markers;
     [HideInInspector] public MarkerActionMode mode;
     private MarkerType selectedMarkerType;
+    private Dictionary<MarkerType, GameObject> markerImages;
+    private Dictionary<MarkerType, GameObject> glowingMarkerImages;
     private RectTransform currLocRT;
     private Marker currMarker;
 
@@ -115,16 +115,11 @@ public class MarkerController : MonoBehaviour
     private float buttonPressedTime;
 
     private Navigation navigation;
+    private Marker navigatingTo;
     private bool isNavigating;
 
     // Rover
-    [SerializeField] private float roverSpeed = 6e-6f;
     private GameObject roverPrefab;
-    private bool hasRoverMarker;
-    private bool isRoverMoving;
-    private const int UpdateAfterFrames = 20;
-    private int frameCt;
-    private Marker roverMarker;
     private Marker rover;
     
     List<Vector2> InitialRoverMarkerLocs = new List<Vector2>
@@ -140,10 +135,7 @@ public class MarkerController : MonoBehaviour
         new Vector2(29.5648850f, -95.0808360f),
     };
 
-    // Voice
-    private GameObject voiceMemoObj;
-
-    void Start()
+    void Awake()
     {
         mainCamera = Camera.main;
         gps = GameObject.Find("GPS").GetComponent<GPS>();
@@ -151,7 +143,22 @@ public class MarkerController : MonoBehaviour
         compassRT = GameObject.Find("Compass Image").GetComponent<RectTransform>();
         compassMarkersRT = GameObject.Find("Compass Markers").GetComponent<RectTransform>();
         markersTf = transform;
-        markers = new Dictionary<GameObject, Marker>();
+        currLocRT = GameObject.Find("CurrLoc").GetComponent<RectTransform>();
+        compassWidth = compassRT.rect.width / 360.0f;
+        actionButtons = GameObject.Find("Marker Action Buttons");
+        navigation = GameObject.Find("Navigation").GetComponent<Navigation>();
+        markerImages = new Dictionary<MarkerType, GameObject>
+        {
+            { MarkerType.POI, GameObject.Find("POI Marker Image") }, 
+            { MarkerType.Obstacle, GameObject.Find("Obstacle Marker Image") },
+            { MarkerType.RoverMarker, GameObject.Find("Rover Marker Image") }
+        };
+        glowingMarkerImages = new Dictionary<MarkerType, GameObject>
+        {
+            { MarkerType.POI, GameObject.Find("Glowing POI Marker Image") }, 
+            { MarkerType.Obstacle, GameObject.Find("Glowing Obstacle Marker Image") },
+            { MarkerType.RoverMarker, GameObject.Find("Glowing Rover Marker Image") }
+        };
         prefabDict = new Dictionary<MarkerType, GameObject>
         {
             { MarkerType.POI,  Resources.Load<GameObject>("CustomPrefabs/POI Marker") },
@@ -159,30 +166,31 @@ public class MarkerController : MonoBehaviour
             { MarkerType.Obstacle, Resources.Load<GameObject>("CustomPrefabs/Obstacle Marker") },
             { MarkerType.RoverMarker, Resources.Load<GameObject>("CustomPrefabs/Rover Marker") },
         };
+    }
+
+    void Start()
+    {
+        // Initialize marker-related fields and states
+        markers = new Dictionary<GameObject, Marker>();
         showMarker = new Dictionary<MarkerType, bool>
         {
             { MarkerType.POI, true },
             { MarkerType.Obstacle, true },
-            { MarkerType.Rover, true },
+            { MarkerType.Rover, false },
             { MarkerType.RoverMarker, true },
         };
-        currLocRT = GameObject.Find("CurrLoc").GetComponent<RectTransform>();
-        compassWidth = compassRT.rect.width / 360.0f;
-        actionButtons = GameObject.Find("Marker Action Buttons");
+        
         actionButtons.SetActive(false);
-        roverDisabled = GameObject.Find("Rover Disabled");
-        obstacleDisabled = GameObject.Find("Obstacle Disabled");
-        poiDisabled = GameObject.Find("POI Disabled");
-        roverDisabled.SetActive(false);
-        obstacleDisabled.SetActive(false);
-        poiDisabled.SetActive(false);
-        navigation = GameObject.Find("Navigation").GetComponent<Navigation>();
-        voiceMemoObj = GameObject.Find("Voice Memo");
-        voiceMemoObj.SetActive(false);
+        foreach (var kvp in glowingMarkerImages)
+        {
+            kvp.Value.SetActive(false);
+        };
+
+        // Initialize rover
         Vector2 roverGpsCoord = new Vector2(GPS.SatCenterLatitude, GPS.SatCenterLongitude);
         rover = new Marker(MarkerType.Rover, roverGpsCoord);
-        rover.Hide();
-
+        markers.Add(rover.MapMarkerObj, rover);
+        
         // Populate the map with initial rover markers
         foreach (Vector2 gpsCoord in InitialRoverMarkerLocs)
         {
@@ -193,7 +201,7 @@ public class MarkerController : MonoBehaviour
 
     public void SetRoverLocation(Vector2 loc)
     {
-        if (rover.IsHidden()) rover.Show();
+        showMarker[MarkerType.Rover] = true;
         rover.GpsCoord = loc;
     }
 
@@ -219,9 +227,6 @@ public class MarkerController : MonoBehaviour
         currLocRT.offsetMin = mapRT.offsetMin + gps.GpsToMapPos(userGps.x, userGps.y);
         currLocRT.offsetMax = currLocRT.offsetMin;
 		/*********************************/
-
-        // Rover
-        rover.Update(userGps, userLook);
 
         foreach(var kvp in markers)
         {
@@ -260,18 +265,14 @@ public class MarkerController : MonoBehaviour
         actionButtons.SetActive(false);
         mode = MarkerActionMode.None;
     }
-
-    public void HideVoiceMemo()
-    {
-        voiceMemoObj.SetActive(false);
-        mode = MarkerActionMode.None;
-    }
-
+    
     private void AddMarker(Vector2 touchCoord)
     {
         currMarker = new Marker(selectedMarkerType, gps.MapPosToGps(touchCoord));
         currMarker.SetOpacity(0.5f);
         markers.Add(currMarker.MapMarkerObj, currMarker);
+        markerImages[selectedMarkerType].SetActive(true);
+        glowingMarkerImages[selectedMarkerType].SetActive(false);
     }
 
     public void OnMapEnter(Vector2 touchCoord)
@@ -307,26 +308,23 @@ public class MarkerController : MonoBehaviour
     {
         if (mode == MarkerActionMode.Edit)
         {
-            currMarker.SetOpacity(1f);
+            if (currMarker.MapMarkerObj != null) currMarker.SetOpacity(1f);
             mode = MarkerActionMode.None;
         }
     }
 
     // Button callbacks
-    public void OnObstacleSelectEnter()
+    public void OnObstaclePressed()
     {
-        selectedMarkerType = MarkerType.Obstacle;
-        buttonPressedTime = Time.time;
+        SelectNewMarkerType(MarkerType.Obstacle);
     }
-    public void OnPOISelectEnter()
+    public void OnPoiPressed()
     {
-        selectedMarkerType = MarkerType.POI;
-        buttonPressedTime = Time.time;
+        SelectNewMarkerType(MarkerType.POI);
     }
-    public void OnRoverSelectEnter()
+    public void OnRoverMarkerPressed()
     {
-        selectedMarkerType = MarkerType.RoverMarker;
-        buttonPressedTime = Time.time;
+        SelectNewMarkerType(MarkerType.RoverMarker);
     }
 
     public void OnMarkerMovePressed()
@@ -352,54 +350,62 @@ public class MarkerController : MonoBehaviour
 
     public void OnMarkerNavigatePressed()
     {
-        if (currMarker.Type != MarkerType.RoverMarker)
+        if (isNavigating && navigatingTo != currMarker)
+        {
+            navigation.StopMarkerNavigate();
+            navigation.StartMarkerNavigate(currMarker.MapMarkerRT);
+        }
+        else
         {
             isNavigating = !isNavigating;
             if (isNavigating) navigation.StartMarkerNavigate(currMarker.MapMarkerRT);
             else navigation.StopMarkerNavigate();
-        }
-        else
-        {
-            roverMarker = currMarker;
-            isRoverMoving = true;
         }
 
         actionButtons.SetActive(false);
         mode = MarkerActionMode.None;
     }
 
-    public void OnMarkerVoiceMemoPressed()
+    private void SelectNewMarkerType(MarkerType type)
     {
-        voiceMemoObj.SetActive(true);
-        actionButtons.SetActive(false);
-        mode = MarkerActionMode.Memo;
-    }
-
-    public void OnMarkerSelectExit()
-    {
-        if (Time.time - buttonPressedTime > 0.5f)
+        // Toggling the same marker type
+        if (selectedMarkerType == type)
         {
-            mode = MarkerActionMode.Add;
+            if (type == MarkerType.RoverMarker)
+            {
+                // Toggle this differently
+            }
+            else
+            {
+                mode = markerImages[type].activeSelf ? MarkerActionMode.Add : MarkerActionMode.None;
+            }
+            markerImages[type].SetActive(!markerImages[type].activeSelf);
+            glowingMarkerImages[type].SetActive(!glowingMarkerImages[type].activeSelf);
         }
         else
         {
-            switch (selectedMarkerType)
+            // State reset if another marker is selected
+            if (glowingMarkerImages[selectedMarkerType].activeSelf)
             {
-                case MarkerType.Obstacle:
-                    obstacleDisabled.SetActive(!obstacleDisabled.activeSelf);
-                    showMarker[MarkerType.Obstacle] = !obstacleDisabled.activeSelf;
-                    break;
+                if (selectedMarkerType == MarkerType.RoverMarker)
+                {
+                    // Hide all rover markers again
+                }
+                markerImages[selectedMarkerType].SetActive(true);
+                glowingMarkerImages[selectedMarkerType].SetActive(false);
+            }
+            
+            // Set the current selection
+            switch (type)
+            {
                 case MarkerType.POI:
-                    poiDisabled.SetActive(!poiDisabled.activeSelf);
-                    showMarker[MarkerType.POI] = !poiDisabled.activeSelf;
-                    break;
-                case MarkerType.RoverMarker:
-                    roverDisabled.SetActive(!roverDisabled.activeSelf);
-                    showMarker[MarkerType.RoverMarker] = !roverDisabled.activeSelf;
+                case MarkerType.Obstacle:
+                    mode = MarkerActionMode.Add;
                     break;
             }
+            markerImages[type].SetActive(false);
+            glowingMarkerImages[type].SetActive(true);
+            selectedMarkerType = type;
         }
     }
-
-
 }

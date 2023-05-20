@@ -199,10 +199,6 @@ public class MapController : MRTKBaseInteractable
         {
             markerController.HideActionButtons();
         }
-        else if (markerController.mode == MarkerActionMode.Memo)
-        {
-            markerController.HideVoiceMemo();
-        }
     }
 
     protected override void OnSelectExited(SelectExitEventArgs args)
