@@ -2,17 +2,20 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using TMPro;
 // using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Geosampling : MonoBehaviour
 {
     public class GeosamplingPhoto
     {
         public TimeSpan timestamp;
-        public Texture2D photo;
+        public Sprite photo;
 
-        public GeosamplingPhoto(TimeSpan _timestamp, Texture2D _photo)
+        public GeosamplingPhoto(TimeSpan _timestamp, Sprite _photo)
         {
             timestamp = _timestamp;
             photo = _photo;
@@ -24,8 +27,6 @@ public class Geosampling : MonoBehaviour
         public int itemID;
         public String lithology;
         public List<GeosamplingPhoto> photos;
-        private const int scWidth = 1920;
-        private const int scHeight = 1080;
 
         public GeosamplingItem(String litho, int id)
         {
@@ -34,18 +35,27 @@ public class Geosampling : MonoBehaviour
             photos = new List<GeosamplingPhoto>();
         }
 
-        private Texture2D GetScreenshot()
+        private Sprite GetScreenshot()
         {
-            RenderTexture rt = new RenderTexture(scWidth, scHeight, 24);
+            RenderTexture rt = new RenderTexture(mainCamera.pixelWidth, mainCamera.pixelHeight, 24);
             mainCamera.targetTexture = rt;
-            Texture2D screenShot = new Texture2D(scWidth, scHeight, TextureFormat.RGB24, false);
             mainCamera.Render();
+            
+            Texture2D screenShot = new Texture2D(mainCamera.pixelWidth, mainCamera.pixelHeight);
             RenderTexture.active = rt;
-            screenShot.ReadPixels(new Rect(0, 0, scWidth, scHeight), 0, 0); 
+            Rect dim = new Rect(0, 0, mainCamera.pixelWidth, mainCamera.pixelHeight);
+            screenShot.ReadPixels(dim, 0, 0); 
             mainCamera.targetTexture = null;
             RenderTexture.active = null;
             Destroy(rt);
-            return screenShot;
+            return Sprite.Create(screenShot, dim, new Vector2(0.5f, 0.5f));
+        }
+        
+        private void UpdateGeoPanel()
+        {
+            geoNumberText.text = itemID.ToString();
+            geoRockTypeText.text = "???"; // TODO: Implement type matching
+            geoImage.sprite = photos.Last().photo;
         }
 
         public IEnumerator TakeNPhotos(int delaySec,
@@ -71,20 +81,24 @@ public class Geosampling : MonoBehaviour
                 ssCanvas.HideCountdown();
 
                 var timestamp = DateTime.Now - startTime;
-                var photoData = GetScreenshot();  // TODO: use camera
-                var photo = new GeosamplingPhoto(timestamp, photoData);
-                photos.Add(photo);
+                // var photoData = ScreenCapture.CaptureScreenshotAsTexture(); 
+                // var photo = new GeosamplingPhoto(timestamp, Sprite.Create(photoData, new Rect(0, 0, photoData.width, photoData.height), new Vector2(0.5f, 0.5f)));
+                // photos.Add(photo);
+                // UpdateGeoPanel();
+                // geoPanel.SetActive(true);
 
                 String msg = String.Format(
                     "Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
                     photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
                 ssCanvas.DisplayMessage(msg, 5);
-
-                Debug.LogFormat("Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
-                    photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
+                //
+                // Debug.LogFormat("Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
+                //     photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
             }
 
             // TODO: Should be automatically hidden in DisplayMessage after nsecs
+            yield return new WaitForSeconds(2);
+            // geoPanel.SetActive(false);
             ssCanvas.HideMessage();
 
             // Bring back the main panel
@@ -98,12 +112,23 @@ public class Geosampling : MonoBehaviour
     private ScreenspaceCanvas _ssCanvasScript;
     private static Camera mainCamera;
 
+    // Geosampling Info Display
+    private static GameObject geoPanel;
+    private static TMP_Text geoNumberText;
+    private static TMP_Text geoRockTypeText;
+    private static Image geoImage;
+
     void Awake()
     {
         _mainPanel = GameObject.Find("Main Panel");
         _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
         _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
         mainCamera = Camera.main;
+        geoPanel = GameObject.Find("Geosampling");
+        geoNumberText = GameObject.Find("Geosample Number Text").GetComponent<TMP_Text>();
+        geoRockTypeText = GameObject.Find("Geosample Rock Type Text").GetComponent<TMP_Text>();
+        geoImage = GameObject.Find("Geosample Image").GetComponent<Image>();
+        geoPanel.SetActive(false);
     }
 
     // Start is called before the first frame update
@@ -128,9 +153,8 @@ public class Geosampling : MonoBehaviour
 
         // Take N=3 photos, each 5 seconds apart
         IEnumerator coroutine = _geosamplingItems.Last().TakeNPhotos(
-            5, _mapControllerScript.StartTimestamp.Value,
+            3, _mapControllerScript.StartTimestamp.Value,
             _ssCanvasScript, _mainPanel);
         StartCoroutine(coroutine);
     }
-
 }
