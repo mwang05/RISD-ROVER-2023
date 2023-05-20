@@ -26,6 +26,17 @@ public class EgressController : MonoBehaviour
     private MapController _mapControllerScript;
     private UIAMsg uiaMsg;
 
+    public void BypassEgress()
+    {
+        for(int i = 0; i < 7; i++)
+        {
+            isCompleted[i] = true;
+        }
+        gameObject.SetActive(false);
+        Nav.SetActive(true);
+        _mapControllerScript.RecordStartTime();
+    }
+
     // public void PerformTask(float s)
     // {
     //     if(Time.time - startTime > s /10)
