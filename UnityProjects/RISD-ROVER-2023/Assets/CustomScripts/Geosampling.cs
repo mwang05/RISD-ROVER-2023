@@ -86,11 +86,14 @@ public class Geosampling : MonoBehaviour
                 // photos.Add(photo);
                 // UpdateGeoPanel();
                 // geoPanel.SetActive(true);
+                geoNumberText.text = itemID.ToString();
 
                 String msg = String.Format(
                     "Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
                     photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
                 ssCanvas.DisplayMessage(msg, 5);
+                
+                geoPanel.SetActive(true);
                 //
                 // Debug.LogFormat("Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
                 //     photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
@@ -100,6 +103,7 @@ public class Geosampling : MonoBehaviour
             yield return new WaitForSeconds(2);
             // geoPanel.SetActive(false);
             ssCanvas.HideMessage();
+            geoPanel.SetActive(false);
 
             // Bring back the main panel
             mainPanel.transform.localScale = new Vector3(1, 1, 1);
@@ -157,4 +161,13 @@ public class Geosampling : MonoBehaviour
             _ssCanvasScript, _mainPanel);
         StartCoroutine(coroutine);
     }
+
+    // public void LateUpdate()
+    // {
+    //     Debug.Log("yo");
+    //     var photoData = ScreenCapture.CaptureScreenshotAsTexture();
+    //     var photo = Sprite.Create(photoData, new Rect(0, 0, photoData.width, photoData.height),
+    //         new Vector2(0.5f, 0.5f));
+    //     geoImage.sprite = photo;
+    // }
 }

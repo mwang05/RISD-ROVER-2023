@@ -51,6 +51,7 @@ public class MapController : MRTKBaseInteractable
         markerController = GameObject.Find("Markers").GetComponent<MarkerController>();
         mapRT.localScale = GetLocalScale(zoomSeries[zoomIndex]);
         gps = GameObject.Find("GPS").GetComponent<GPS>();
+        StartTimestamp = DateTime.Now;
     }
 
     void Update()

@@ -15,6 +15,7 @@ public class GPS : MonoBehaviour
     /************* GameObject References **************/
     private Camera mainCamera;
     private RectTransform mapRT, canvasRT;
+    private Vector2 userGps = new Vector2(SatCenterLatitude, SatCenterLongitude);
 
     void Start()
     {
@@ -26,10 +27,11 @@ public class GPS : MonoBehaviour
     // For simulation in Unity
     public Vector2 GetGpsCoords()
     {
-        Vector3 worldPos = mainCamera.transform.position;
-        Vector2 gpsCoords = new Vector2(SatCenterLatitude, SatCenterLongitude);
-        gpsCoords += 5e-5f * new Vector2(worldPos.z, worldPos.x);
-        return gpsCoords;
+        // Vector3 worldPos = mainCamera.transform.position;
+        // Vector2 gpsCoords = new Vector2(SatCenterLatitude, SatCenterLongitude);
+        // gpsCoords += 5e-5f * new Vector2(worldPos.z, worldPos.x);
+        // return gpsCoords;
+        return userGps;
     }
 
     public Vector2 GpsToMapPos(float latitudeDeg, float longitudeDeg)
@@ -87,5 +89,10 @@ public class GPS : MonoBehaviour
         worldPos /= scaleW2M;
 
         return worldPos;
+    }
+
+    public void UpdateUserGps(Vector2 gps)
+    {
+        userGps = gps;
     }
 }

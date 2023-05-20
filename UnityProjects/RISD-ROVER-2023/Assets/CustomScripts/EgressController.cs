@@ -341,6 +341,7 @@ public class EgressController : MonoBehaviour
         message.SetActive(false);
 
         Nav.SetActive(false);
+        uiaMsg = new UIAMsg();
     }
 
     // Update is called once per frame

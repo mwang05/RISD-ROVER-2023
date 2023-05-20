@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,10 +10,10 @@ public class TSSAgent : MonoBehaviour
     // TSS related information
     TSSConnection tss;
     private const string tssUri = "ws://192.168.50.10:3001";
-    private const string team_name = "";
-    private const string username = "";
-    private const string university = "";
-    private const string user_guid = "";
+    private const string team_name = "RISD";
+    private const string username = "VK05";
+    private const string university = "Rhode Island School of Design";
+    private const string user_guid = "cab500cc-d4ab-4ddc-98e4-780bd720a30c";
     
     
     private bool isConnecting = false;
@@ -28,17 +29,18 @@ public class TSSAgent : MonoBehaviour
 
     private GameObject egress;
     private EgressController egressController;
+    private GPS gps;
+    private bool firstConnect;
 
     private GameObject connectMsg;
 
     // Start is called before the first frame update
-    async void Start()
+    private void Awake()
     {
-        tss = new TSSConnection();
         markerController = GameObject.Find("Markers").GetComponent<MarkerController>();
         EVA = GameObject.Find("EVA");
         timerText = GameObject.Find("Timer").GetComponent<TMPro.TMP_Text>();
-        heartRateText = GameObject.Find("BPM").GetComponent<TMPro.TMP_Text>();
+        heartRateText = GameObject.Find("Bpm").GetComponent<TMPro.TMP_Text>();
         POPressureText = GameObject.Find("Primary Oxygen Pressure").GetComponent<TMPro.TMP_Text>();
         PORateText = GameObject.Find("Primary Oxygen Rate").GetComponent<TMPro.TMP_Text>();
         POTimeText = GameObject.Find("Primary Oxygen Time").GetComponent<TMPro.TMP_Text>();
@@ -56,17 +58,27 @@ public class TSSAgent : MonoBehaviour
         batteryTimeText = GameObject.Find("Battery Time").GetComponent<TMPro.TMP_Text>();
         batteryCapacityText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
         connectMsg = GameObject.Find("Connecting");
-        connectMsg.SetActive(false);
-        EVA.SetActive(false);
         egress = GameObject.Find("Egress");
         egressController = egress.GetComponent<EgressController>();
-        // Connect();
+        gps = GameObject.Find("GPS").GetComponent<GPS>();
+    }
+
+  void Start()
+    {
+        tss = new TSSConnection();
+        connectMsg.SetActive(false);
+        egress.SetActive(false);
+        EVA.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (!firstConnect)
+        {
+            firstConnect = true;
+            Connect();
+        }
         // Updates the websocket once per frame
         if (connected) tss.Update();
         // else if (!isConnecting)
@@ -88,21 +100,29 @@ public class TSSAgent : MonoBehaviour
         tss.OnTSSTelemetryMsg += (telemMsg) =>
         {
             // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
-            if (telemMsg.gpsMsg != null)
+            if (telemMsg.gpsMsg.lat != 0)
             {
-                UpdateGPS(telemMsg.gpsMsg);
+                gps.UpdateUserGps(new Vector2(telemMsg.gpsMsg.lat, telemMsg.gpsMsg.lon));
+            }
+            
+            if (telemMsg.roverMsg.lat != 0)
+            {
+                markerController.SetRoverLocation(new Vector2(telemMsg.gpsMsg.lat, telemMsg.gpsMsg.lon));
             }
 
-            if (telemMsg.imuMsg != null)
-            {
-            }
+            // if (telemMsg.imuMsg.heading )
+            // {
+            // }
 
-            if (telemMsg.simulationStates != null)
+            if (telemMsg.simulationStates.battery_capacity != 0)
             {
                 UpdateEVA(telemMsg.simulationStates);
             }
 
-            if (telemMsg.uiaMsg != null && egress.activeSelf)
+            var uia = telemMsg.uiaMsg;
+            bool validUia = uia.depress_pump_switch || uia.emu1_o2_supply_switch || uia.ev1_supply_switch ||
+                              uia.emu1_pwr_switch || uia.emu1_water_waste || uia.o2_vent_switch;
+            if (validUia && egress.activeSelf)
             {
                 egressController.UIAUpdateCallback(telemMsg.uiaMsg);
             }
@@ -116,6 +136,7 @@ public class TSSAgent : MonoBehaviour
             connected = true;
             isConnecting = false;
             connectMsg.SetActive(false);
+            egress.SetActive(true);
         };
 
         tss.OnError += (string e) =>
@@ -177,9 +198,5 @@ public class TSSAgent : MonoBehaviour
         batteryTimeText.text = string.Format("{00:00:00}", eva.battery_time_left);
         batteryCapacityText.text = eva.battery_capacity.ToString("##amp-hr");
 
-    }
-
-    private void UpdateGPS(GPSMsg msg)
-    {
     }
 }
