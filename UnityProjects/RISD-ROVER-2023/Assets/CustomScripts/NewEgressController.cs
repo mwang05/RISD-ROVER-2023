@@ -1,4 +1,4 @@
-qsusing System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,14 +21,16 @@ public class NewEgressController : MonoBehaviour
         // Power on EMU-1
         step => step switch {
             0 => uiaState.emu1_pwr_switch,
-            1 => true,
+            1 => uiaState.depress_pump_switch, // emu1_is_booted
             _ => false,
         },
     };
 
     private static UIAMsg uiaState;
-    private int currTask;
-    private int currStep;
+    private int currTask = 0;
+    private int currStep = 0;
+    private float loadingRotation;
+    private GameObject currLoadingIcon;
 
     private GameObject nav;
     private MapController mapControllerScript;
@@ -38,7 +40,13 @@ public class NewEgressController : MonoBehaviour
     private TMPro.TMP_Text[] greenTexts;
     private GameObject[] completeIcons;
     private GameObject[] loadingIcons;
-    
+    private TMPro.TMP_Text heading;
+    private TMPro.TMP_Text stage;
+    private RectTransform panelRT;
+
+    // private float simulationTime;
+    private float panelMaxHeight = 260;
+    private float panelWidth = 400;
 
     void Awake()
     {
@@ -50,6 +58,11 @@ public class NewEgressController : MonoBehaviour
         greenTexts = new TMPro.TMP_Text[6];
         completeIcons = new GameObject[6];
         loadingIcons = new GameObject[6];
+        heading = GameObject.Find("Heading Text").GetComponent<TMPro.TMP_Text>();
+        stage = GameObject.Find("Procedure Stage").GetComponent<TMPro.TMP_Text>();
+        panelRT = GameObject.Find("List Back Plate").GetComponent<RectTransform>();
+        nav = GameObject.Find("Main Panel");
+        mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
 
         for (int i = 0; i < 6; i++)
         {
@@ -59,20 +72,31 @@ public class NewEgressController : MonoBehaviour
             greenTexts[i] = greenTextObjs[i].GetComponent<TMPro.TMP_Text>();
             completeIcons[i] = GameObject.Find("Complete " + (i + 1));
             loadingIcons[i] = GameObject.Find("Loading " + (i + 1));
-        }    
+        }
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        nav.SetActive(false);
+        uiaState = new UIAMsg();
+        // simulationTime = Time.time;
         SetupPanel();
+    }
+
+    void FixedUpdate()
+    {
+        // if (Time.time - simulationTime > 3) uiaState.emu1_pwr_switch = true;
+        // if (Time.time - simulationTime > 6) uiaState.depress_pump_switch = true;
+        loadingRotation = (loadingRotation + 1f) % 360;
+        if (currLoadingIcon != null) currLoadingIcon.transform.localRotation = Quaternion.Euler(0, 0, loadingRotation);
     }
 
     // Update is called once per frame
     void Update()
     {
         // Current task complete, move on
-        if (currStep >= taskSteps[currTask].Count)
+        if (currTask < taskSteps.Length && currStep >= taskSteps[currTask].Count)
         {
             currTask++;
             currStep = 0;
@@ -80,9 +104,10 @@ public class NewEgressController : MonoBehaviour
             // Check if we are done with all tasks
             if (currTask >= taskTitles.Length) 
             {
+                Debug.Log("Done");
                 gameObject.SetActive(false);
-                // nav.SetActive(true);
-                // mapControllerScript.RecordStartTime();
+                nav.SetActive(true);
+                mapControllerScript.RecordStartTime();
             }
             else
             {
@@ -90,8 +115,29 @@ public class NewEgressController : MonoBehaviour
             }
         }
 
-        // Perform the current check
-        if (taskExecutions[currTask](currStep)) currStep++;
+        if (TaskInProgress())
+        {
+            if (taskExecutions[currTask](currStep))
+            {
+                loadingIcons[currStep].SetActive(false);
+                completeIcons[currStep].SetActive(true);
+                currStep++;
+                if (TaskInProgress())
+                {
+                    loadingIcons[currStep].SetActive(true);
+                    currLoadingIcon = loadingIcons[currStep];
+                }
+                else 
+                {
+                    currLoadingIcon = null;
+                }
+            }
+        }
+    }
+
+    private bool TaskInProgress()
+    {
+        return currTask < taskSteps.Length && currStep < taskSteps[currTask].Count;
     }
 
     void SetupPanel()
@@ -114,5 +160,12 @@ public class NewEgressController : MonoBehaviour
             loadingIcons[i].SetActive(false);
         }
         loadingIcons[0].SetActive(true);
+        currLoadingIcon = loadingIcons[0];
+        panelRT.sizeDelta = new Vector2(panelWidth, panelMaxHeight - 30 * (6 - taskSteps[currTask].Count));
+    }
+
+    public void UIAUpdateCallback(UIAMsg msg)
+    {
+        uiaState = msg;
     }
 }

@@ -110,7 +110,7 @@ public class Geosampling : MonoBehaviour
     {
         // _mainPanel = GameObject.Find("Main Panel");
         // _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
-        _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
+        // _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
         mainCamera = Camera.main;
     }
 

@@ -207,6 +207,8 @@ public class MarkerController : MonoBehaviour
 			curr.SetOpacity(0.3f);
             markers.Add(curr.MapMarkerObj, curr);
         }
+
+        tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
     }
 
     public void SetRoverLocation(Vector2 loc)
@@ -393,7 +395,7 @@ public class MarkerController : MonoBehaviour
 
 	public void OnRoverMarkerConfirmPressed()
 	{
-		// tssAgent.SendRoverMoveCommand(currMarker.GpsCoord);
+		tssAgent.SendRoverMoveCommand(currMarker.GpsCoord);
 		roverButtons.SetActive(false);
 	}
 

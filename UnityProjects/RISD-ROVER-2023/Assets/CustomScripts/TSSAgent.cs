@@ -28,7 +28,7 @@ public class TSSAgent : MonoBehaviour
     private TMPro.TMP_Text EEPressure, EETemperature, batteryTimeText, batteryCapacityText;
 
     private GameObject egress;
-    private EgressController egressController;
+    private NewEgressController egressController;
     private GPS gps;
     private bool firstConnect;
 
@@ -58,12 +58,12 @@ public class TSSAgent : MonoBehaviour
         batteryTimeText = GameObject.Find("Battery Time").GetComponent<TMPro.TMP_Text>();
         batteryCapacityText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
         connectMsg = GameObject.Find("Connecting");
-        egress = GameObject.Find("Egress");
-        egressController = egress.GetComponent<EgressController>();
+        egress = GameObject.Find("New Egress");
+        egressController = egress.GetComponent<NewEgressController>();
         gps = GameObject.Find("GPS").GetComponent<GPS>();
     }
 
-  void Start()
+    void Start()
     {
         tss = new TSSConnection();
         connectMsg.SetActive(false);
@@ -91,7 +91,7 @@ public class TSSAgent : MonoBehaviour
 
     public async void Connect()
     {
-        isConnecting = true;
+        // isConnecting = true;
         connectMsg.SetActive(true);
         var connecting = tss.ConnectToURI(tssUri, team_name, username, university, user_guid);
         // Create a function that takes asing TSSMsg parameter and returns void. For example:
@@ -102,6 +102,7 @@ public class TSSAgent : MonoBehaviour
             // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
             if (telemMsg.gpsMsg.lat != 0)
             {
+                Debug.Log(telemMsg.gpsMsg.lat + ", " + telemMsg.gpsMsg.lon);
                 gps.UpdateUserGps(new Vector2(telemMsg.gpsMsg.lat, telemMsg.gpsMsg.lon));
             }
 
@@ -118,9 +119,15 @@ public class TSSAgent : MonoBehaviour
             var uia = telemMsg.uiaMsg;
             bool validUia = uia.depress_pump_switch || uia.emu1_o2_supply_switch || uia.ev1_supply_switch ||
                               uia.emu1_pwr_switch || uia.emu1_water_waste || uia.o2_vent_switch;
+
             if (validUia && egress.activeSelf)
             {
                 egressController.UIAUpdateCallback(telemMsg.uiaMsg);
+            }
+
+            if (telemMsg.specMsg.CaO != 0)
+            {
+                Debug.Log(telemMsg.specMsg.CaO);
             }
         };
 
@@ -132,7 +139,7 @@ public class TSSAgent : MonoBehaviour
             connected = true;
             isConnecting = false;
             connectMsg.SetActive(false);
-            egress.SetActive(true);
+            // egress.SetActive(true);
         };
 
         tss.OnError += (string e) =>
@@ -161,11 +168,11 @@ public class TSSAgent : MonoBehaviour
         Debug.Log("Received the following telemetry data from the TSS:\n" + JsonUtility.ToJson(tssMsg, prettyPrint: true));
     }
 
-	public void SendRoverMoveCommand(Vector2 loc)
-	{
-		Debug.Log("Send rover to " + loc);
-		tss.SendRoverNavigateCommand(loc.x, loc.y);
-	}
+    public void SendRoverMoveCommand(Vector2 loc)
+    {
+        Debug.Log("Send rover to " + loc);
+        tss.SendRoverNavigateCommand(loc.x, loc.y);
+    }
 
     private void UpdateEVA(SimulationStates eva)
     {
