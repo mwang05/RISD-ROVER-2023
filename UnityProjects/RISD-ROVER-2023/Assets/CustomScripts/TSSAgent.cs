@@ -14,17 +14,17 @@ public class TSSAgent : MonoBehaviour
     private const string username = "VK05";
     private const string university = "Rhode Island School of Design";
     private const string user_guid = "cab500cc-d4ab-4ddc-98e4-780bd720a30c";
-    
-    
+
+
     private bool isConnecting = false;
     private bool connected = false;
 
     private MarkerController markerController;
 
     private GameObject EVA;
-    private TMPro.TMP_Text timerText, heartRateText, POPressureText, PORateText, POTimeText, POPrecentText; 
+    private TMPro.TMP_Text timerText, heartRateText, POPressureText, PORateText, POTimeText, POPrecentText;
     private TMPro.TMP_Text SOPessureText, SORateText, SOTimeText, SOPercentText;
-    private TMPro.TMP_Text h2oGasPressureText, h2oLiquidPressureText, suitPressureText, fanRateText; 
+    private TMPro.TMP_Text h2oGasPressureText, h2oLiquidPressureText, suitPressureText, fanRateText;
     private TMPro.TMP_Text EEPressure, EETemperature, batteryTimeText, batteryCapacityText;
 
     private GameObject egress;
@@ -104,15 +104,11 @@ public class TSSAgent : MonoBehaviour
             {
                 gps.UpdateUserGps(new Vector2(telemMsg.gpsMsg.lat, telemMsg.gpsMsg.lon));
             }
-            
+
             if (telemMsg.roverMsg.lat != 0)
             {
                 markerController.SetRoverLocation(new Vector2(telemMsg.gpsMsg.lat, telemMsg.gpsMsg.lon));
             }
-
-            // if (telemMsg.imuMsg.heading )
-            // {
-            // }
 
             if (telemMsg.simulationStates.battery_capacity != 0)
             {
@@ -165,12 +161,18 @@ public class TSSAgent : MonoBehaviour
         Debug.Log("Received the following telemetry data from the TSS:\n" + JsonUtility.ToJson(tssMsg, prettyPrint: true));
     }
 
+	public void SendRoverMoveCommand(Vector2 loc)
+	{
+		Debug.Log("Send rover to " + loc);
+		tss.SendRoverNavigateCommand(loc.x, loc.y);
+	}
+
     private void UpdateEVA(SimulationStates eva)
     {
         if (!EVA.activeSelf) return;
 
         timerText.text = string.Format("{00:00:00}", eva.timer);
-        
+
         heartRateText.text = eva.heart_rate.ToString("###bpm");
 
         POPressureText.text = eva.o2_pressure.ToString("###%");
@@ -187,7 +189,7 @@ public class TSSAgent : MonoBehaviour
 
         h2oLiquidPressureText.text = eva.h2o_liquid_pressure.ToString("###psia");
 
-        suitPressureText.text = eva.suits_pressure.ToString("#psid"); 
+        suitPressureText.text = eva.suit_pressure.ToString("#psid");
 
         string v_fan_str = eva.fan_tachometer.ToString("0F");
         fanRateText.text = v_fan_str.Insert(v_fan_str.Length - 3, ",");
