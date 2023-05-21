@@ -50,13 +50,6 @@ public class Geosampling : MonoBehaviour
             Destroy(rt);
             return Sprite.Create(screenShot, dim, new Vector2(0.5f, 0.5f));
         }
-        
-        private void UpdateGeoPanel()
-        {
-            geoNumberText.text = itemID.ToString();
-            geoRockTypeText.text = "???"; // TODO: Implement type matching
-            geoImage.sprite = photos.Last().photo;
-        }
 
         public IEnumerator TakeNPhotos(int delaySec,
                                        DateTime startTime,
@@ -86,14 +79,12 @@ public class Geosampling : MonoBehaviour
                 // photos.Add(photo);
                 // UpdateGeoPanel();
                 // geoPanel.SetActive(true);
-                geoNumberText.text = itemID.ToString();
 
                 String msg = String.Format(
                     "Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
                     photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
                 ssCanvas.DisplayMessage(msg, 5);
                 
-                geoPanel.SetActive(true);
                 //
                 // Debug.LogFormat("Cheese! Geosample {0} taken {1}:{2}:{3} after Egress finished, (Item {4}, {5})",
                 //     photos.Count, timestamp.Hours, timestamp.Minutes, timestamp.Seconds, itemID, lithology);
@@ -103,7 +94,6 @@ public class Geosampling : MonoBehaviour
             yield return new WaitForSeconds(2);
             // geoPanel.SetActive(false);
             ssCanvas.HideMessage();
-            geoPanel.SetActive(false);
 
             // Bring back the main panel
             mainPanel.transform.localScale = new Vector3(1, 1, 1);
@@ -116,23 +106,12 @@ public class Geosampling : MonoBehaviour
     private ScreenspaceCanvas _ssCanvasScript;
     private static Camera mainCamera;
 
-    // Geosampling Info Display
-    private static GameObject geoPanel;
-    private static TMP_Text geoNumberText;
-    private static TMP_Text geoRockTypeText;
-    private static Image geoImage;
-
     void Awake()
     {
         _mainPanel = GameObject.Find("Main Panel");
         _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
         _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
         mainCamera = Camera.main;
-        geoPanel = GameObject.Find("Geosampling");
-        geoNumberText = GameObject.Find("Geosample Number Text").GetComponent<TMP_Text>();
-        geoRockTypeText = GameObject.Find("Geosample Rock Type Text").GetComponent<TMP_Text>();
-        geoImage = GameObject.Find("Geosample Image").GetComponent<Image>();
-        geoPanel.SetActive(false);
     }
 
     // Start is called before the first frame update
