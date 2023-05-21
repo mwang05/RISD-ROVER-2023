@@ -726,7 +726,7 @@ GameObject:
   - component: {fileID: 34934716}
   - component: {fileID: 34934717}
   m_Layer: 5
-  m_Name: Status Icon
+  m_Name: Status Icon 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1290,7 +1290,7 @@ GameObject:
   - component: {fileID: 64378713}
   - component: {fileID: 64378714}
   m_Layer: 5
-  m_Name: Status Icon
+  m_Name: Status Icon 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1336,7 +1336,7 @@ GameObject:
   - component: {fileID: 72511940}
   - component: {fileID: 72511941}
   m_Layer: 5
-  m_Name: Status Icon
+  m_Name: Status Icon 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4408,7 +4408,7 @@ GameObject:
   - component: {fileID: 246398097}
   - component: {fileID: 246398096}
   m_Layer: 5
-  m_Name: Complete
+  m_Name: Complete 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4727,7 +4727,7 @@ GameObject:
   - component: {fileID: 247245966}
   - component: {fileID: 247245967}
   m_Layer: 5
-  m_Name: Status Icon
+  m_Name: Status Icon 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5457,7 +5457,7 @@ GameObject:
   - component: {fileID: 297817348}
   - component: {fileID: 297817347}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: Loading 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6329,7 +6329,7 @@ GameObject:
   - component: {fileID: 360140749}
   - component: {fileID: 360140748}
   m_Layer: 5
-  m_Name: Stage Text g
+  m_Name: Stage Text g 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6648,7 +6648,7 @@ GameObject:
   - component: {fileID: 386805169}
   - component: {fileID: 386805168}
   m_Layer: 5
-  m_Name: Stage Text
+  m_Name: Stage Text 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9406,7 +9406,7 @@ GameObject:
   - component: {fileID: 585608940}
   - component: {fileID: 585608941}
   m_Layer: 5
-  m_Name: Status Icon
+  m_Name: Status Icon 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10181,7 +10181,7 @@ GameObject:
   - component: {fileID: 660347844}
   - component: {fileID: 660347843}
   m_Layer: 5
-  m_Name: Stage Text g
+  m_Name: Stage Text g 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10316,7 +10316,7 @@ GameObject:
   - component: {fileID: 664815313}
   - component: {fileID: 664815312}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: Loading 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11117,7 +11117,7 @@ GameObject:
   - component: {fileID: 702445207}
   - component: {fileID: 702445208}
   m_Layer: 5
-  m_Name: Status Icon
+  m_Name: Status Icon 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12904,7 +12904,7 @@ GameObject:
   - component: {fileID: 761125063}
   - component: {fileID: 761125062}
   m_Layer: 5
-  m_Name: Stage Text
+  m_Name: Stage Text 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14738,7 +14738,7 @@ GameObject:
   - component: {fileID: 863817927}
   - component: {fileID: 863817926}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: Loading 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15246,7 +15246,7 @@ GameObject:
   - component: {fileID: 884522279}
   - component: {fileID: 884522278}
   m_Layer: 5
-  m_Name: Stage Text g
+  m_Name: Stage Text g 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16637,7 +16637,7 @@ GameObject:
   - component: {fileID: 981181669}
   - component: {fileID: 981181668}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: Loading 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19764,7 +19764,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1110900895
 RectTransform:
   m_ObjectHideFlags: 0
@@ -21661,7 +21661,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1204063528
 RectTransform:
   m_ObjectHideFlags: 0
@@ -21789,7 +21789,7 @@ GameObject:
   - component: {fileID: 1209693944}
   - component: {fileID: 1209693943}
   m_Layer: 5
-  m_Name: Stage Text g
+  m_Name: Stage Text g 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -21923,7 +21923,7 @@ GameObject:
   - component: {fileID: 1217655984}
   - component: {fileID: 1217655983}
   m_Layer: 5
-  m_Name: Stage Text
+  m_Name: Stage Text 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23361,7 +23361,7 @@ GameObject:
   - component: {fileID: 1286235979}
   - component: {fileID: 1286235978}
   m_Layer: 5
-  m_Name: Complete
+  m_Name: Complete 5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23511,7 +23511,7 @@ GameObject:
   - component: {fileID: 1295239771}
   - component: {fileID: 1295239770}
   m_Layer: 5
-  m_Name: Stage Text g
+  m_Name: Stage Text g 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23766,7 +23766,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Feldspathic basalt
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -23856,7 +23856,7 @@ GameObject:
   - component: {fileID: 1307687252}
   - component: {fileID: 1307687251}
   m_Layer: 5
-  m_Name: Complete
+  m_Name: Complete 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24963,7 +24963,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   markerEditSensitivity: 0.000033
   mode: 3
-  roverSpeed: 0.000006
 --- !u!1 &1337559802
 GameObject:
   m_ObjectHideFlags: 0
@@ -27619,7 +27618,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: 'Sample #70,215,312 '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -28629,7 +28628,7 @@ GameObject:
   - component: {fileID: 1465550634}
   - component: {fileID: 1465550633}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: Loading 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31850,7 +31849,7 @@ GameObject:
   - component: {fileID: 1601980125}
   - component: {fileID: 1601980124}
   m_Layer: 5
-  m_Name: Stage Text g
+  m_Name: Stage Text g 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -36366,7 +36365,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1835906572}
   m_Layer: 5
-  m_Name: Heading
+  m_Name: Egress Heading
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -36735,7 +36734,7 @@ GameObject:
   - component: {fileID: 1883149353}
   - component: {fileID: 1883149352}
   m_Layer: 5
-  m_Name: Stage Text
+  m_Name: Stage Text 3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -37711,7 +37710,7 @@ GameObject:
   - component: {fileID: 1918078921}
   - component: {fileID: 1918078920}
   m_Layer: 5
-  m_Name: Stage Text
+  m_Name: Stage Text 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -37846,7 +37845,7 @@ GameObject:
   - component: {fileID: 1934656873}
   - component: {fileID: 1934656872}
   m_Layer: 5
-  m_Name: Complete
+  m_Name: Complete 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40026,7 +40025,7 @@ GameObject:
   - component: {fileID: 2099879696}
   - component: {fileID: 2099879695}
   m_Layer: 5
-  m_Name: Loading
+  m_Name: Loading 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40619,7 +40618,7 @@ GameObject:
   - component: {fileID: 2126406515}
   - component: {fileID: 2126406514}
   m_Layer: 5
-  m_Name: Stage Text
+  m_Name: Stage Text 4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40754,7 +40753,7 @@ GameObject:
   - component: {fileID: 2131509196}
   - component: {fileID: 2131509195}
   m_Layer: 5
-  m_Name: Complete
+  m_Name: Complete 6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41075,7 +41074,7 @@ GameObject:
   - component: {fileID: 2142163112}
   - component: {fileID: 2142163111}
   m_Layer: 5
-  m_Name: Complete
+  m_Name: Complete 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41270,7 +41269,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text: Mission 17
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

@@ -32,16 +32,40 @@ public class NewEgressController : MonoBehaviour
 
     private GameObject nav;
     private MapController mapControllerScript;
+    private GameObject[] normalTextObjs;
+    private TMPro.TMP_Text[] normalTexts;
+    private GameObject[] greenTextObjs;
+    private TMPro.TMP_Text[] greenTexts;
+    private GameObject[] completeIcons;
+    private GameObject[] loadingIcons;
+    
 
     void Awake()
     {
-        nav = GameObject.Find("Main Panel");
-        mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
+        // nav = GameObject.Find("Main Panel");
+        // mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
+        normalTextObjs = new GameObject[6];
+        normalTexts = new TMPro.TMP_Text[6];
+        greenTextObjs = new GameObject[6];
+        greenTexts = new TMPro.TMP_Text[6];
+        completeIcons = new GameObject[6];
+        loadingIcons = new GameObject[6];
+
+        for (int i = 0; i < 6; i++)
+        {
+            normalTextObjs[i] = GameObject.Find("Stage Text " + (i + 1).ToString());
+            greenTextObjs[i] = GameObject.Find("Stage Text g " + (i + 1).ToString());
+            normalTexts[i] = normalTextObjs[i].GetComponent<TMPro.TMP_Text>();
+            greenTexts[i] = greenTextObjs[i].GetComponent<TMPro.TMP_Text>();
+            completeIcons[i] = GameObject.Find("Complete " + (i + 1));
+            loadingIcons[i] = GameObject.Find("Loading " + (i + 1));
+        }    
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        SetupPanel();
     }
 
     // Update is called once per frame
@@ -57,8 +81,12 @@ public class NewEgressController : MonoBehaviour
             if (currTask >= taskTitles.Length) 
             {
                 gameObject.SetActive(false);
-                nav.SetActive(true);
-                mapControllerScript.RecordStartTime();
+                // nav.SetActive(true);
+                // mapControllerScript.RecordStartTime();
+            }
+            else
+            {
+                SetupPanel();
             }
         }
 
@@ -68,6 +96,23 @@ public class NewEgressController : MonoBehaviour
 
     void SetupPanel()
     {
-        
+        for (int i = 0; i < 6; i++)
+        {
+            if (i < taskSteps[currTask].Count)
+            {
+                normalTexts[i].text = taskSteps[currTask][i];
+                normalTextObjs[i].SetActive(true);
+                greenTexts[i].text = taskSteps[currTask][i];
+                greenTextObjs[i].SetActive(false);
+            }
+            else 
+            {
+                normalTextObjs[i].SetActive(false);
+                greenTextObjs[i].SetActive(false);
+            }
+            completeIcons[i].SetActive(false);
+            loadingIcons[i].SetActive(false);
+        }
+        loadingIcons[0].SetActive(true);
     }
 }

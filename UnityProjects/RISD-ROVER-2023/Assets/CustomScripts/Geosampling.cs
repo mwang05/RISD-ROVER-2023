@@ -108,8 +108,8 @@ public class Geosampling : MonoBehaviour
 
     void Awake()
     {
-        _mainPanel = GameObject.Find("Main Panel");
-        _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
+        // _mainPanel = GameObject.Find("Main Panel");
+        // _mapControllerScript = GameObject.Find("Map Panel").GetComponent<MapController>();
         _ssCanvasScript = GameObject.Find("SS Canvas").GetComponent<ScreenspaceCanvas>();
         mainCamera = Camera.main;
     }
