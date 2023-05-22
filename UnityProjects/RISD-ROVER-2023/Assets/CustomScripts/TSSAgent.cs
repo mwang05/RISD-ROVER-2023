@@ -102,7 +102,6 @@ public class TSSAgent : MonoBehaviour
             // Do some thing with each type of message (get using telemMsg.MESSAGE[0])
             if (telemMsg.gpsMsg.lat != 0)
             {
-                Debug.Log(telemMsg.gpsMsg.lat + ", " + telemMsg.gpsMsg.lon);
                 gps.UpdateUserGps(new Vector2(telemMsg.gpsMsg.lat, telemMsg.gpsMsg.lon));
             }
 
@@ -122,7 +121,7 @@ public class TSSAgent : MonoBehaviour
 
             if (validUia && egress.activeSelf)
             {
-                egressController.UIAUpdateCallback(telemMsg.uiaMsg);
+                egressController.UIAMsgUpdateCallback(telemMsg.uiaMsg);
             }
 
             if (telemMsg.specMsg.CaO != 0)

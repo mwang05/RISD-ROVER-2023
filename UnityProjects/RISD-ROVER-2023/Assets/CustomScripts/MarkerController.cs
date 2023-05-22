@@ -208,7 +208,7 @@ public class MarkerController : MonoBehaviour
             markers.Add(curr.MapMarkerObj, curr);
         }
 
-        tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
+        // tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
     }
 
     public void SetRoverLocation(Vector2 loc)
