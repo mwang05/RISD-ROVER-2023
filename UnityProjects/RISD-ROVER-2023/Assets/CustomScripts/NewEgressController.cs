@@ -8,14 +8,9 @@ public class NewEgressController : MonoBehaviour
 {
     private string[] taskHeadings = {
         "Power on EMU-1",
-        "Power on EMU-1",
     };
 
     private List<string>[] taskSteps = {
-        new List<string> {
-            "Switch EMU-1 Power to ON",
-            "When the SUIT is booted (emu1_is_booted), proceed"
-        },
         new List<string> {
             "Switch EMU-1 Power to ON",
             "When the SUIT is booted (emu1_is_booted), proceed"
@@ -24,11 +19,6 @@ public class NewEgressController : MonoBehaviour
 
     private Func<int, bool>[] taskExecutions = {
         // Power on EMU-1
-        step => step switch {
-            0 => uiaMsg.emu1_pwr_switch,
-            1 => uiaState.emu1_is_booted,
-            _ => false, // default case
-        },
         step => step switch {
             0 => uiaMsg.emu1_pwr_switch,
             1 => uiaState.emu1_is_booted,
@@ -230,7 +220,13 @@ public class NewEgressController : MonoBehaviour
         }
         loadingIcons[0].SetActive(true);
         currLoadingIcon = loadingIcons[0];
-        panelRT.sizeDelta = new Vector2(panelWidth, panelMaxHeight - 30 * (6 - taskSteps[currTask].Count));
+        
+        // Resize the panel
+        int numInactive = 6 - taskSteps[currTask].Count;
+        panelRT.sizeDelta = new Vector2(panelWidth, panelMaxHeight - 30 * numInactive);
+        Vector2 newPosition = panelRT.anchoredPosition;
+        newPosition.y = 15 * numInactive;
+        panelRT.anchoredPosition = newPosition;
     }
 
     public void UIAMsgUpdateCallback(UIAMsg msg)
@@ -238,7 +234,7 @@ public class NewEgressController : MonoBehaviour
         uiaMsg = msg;
     }
 
-    public void UIAStateUpdateCallbacl(UIAState state)
+    public void UIAStateUpdateCallback(UIAState state)
     {
         uiaState = state;
     }

@@ -13,8 +13,8 @@ public class NotificationController : MonoBehaviour
 
     private float msgStartTime;
     private float errorStartTime;
-    [SerializeField] private float msgShowTime = 3;
-    [SerializeField] private float errorShowTime = 5;
+    private float msgDuration;
+    private float errorDuration;
 
     void Awake()
     {
@@ -38,7 +38,7 @@ public class NotificationController : MonoBehaviour
         if (systemMsg.activeSelf)
         {
             float delta = Time.time - msgStartTime;
-            if (delta >= msgShowTime)
+            if (delta >= msgDuration)
             {
                 HideSystemMessage();
             }
@@ -47,24 +47,26 @@ public class NotificationController : MonoBehaviour
         if (errorWarning.activeSelf)
         {
             float delta = Time.time - errorStartTime;
-            if (delta >= errorShowTime)
+            if (delta >= errorDuration)
             {
                 HideErrorWarning();
             }
         }
     }
 
-    public void PushSystemMessage(string msg)
+    public void PushSystemMessage(string msg, float duration)
     {
         msgStartTime = Time.time;
         systemMsgText.text = msg;
+        msgDuration = duration;
         systemMsg.SetActive(true);
     }
 
-    public void PushErrorWarning(string err)
+    public void PushErrorWarning(string err, float duration)
     {
         errorStartTime = Time.time;
         errorWarningText.text = err;
+        errorDuration = duration;
         errorWarning.SetActive(true);
     }
 
