@@ -21,11 +21,8 @@ public class TSSAgent : MonoBehaviour
 
     private MarkerController markerController;
 
-    private GameObject EVA;
-    private TMPro.TMP_Text timerText, heartRateText, POPressureText, PORateText, POTimeText, POPrecentText;
-    private TMPro.TMP_Text SOPessureText, SORateText, SOTimeText, SOPercentText;
-    private TMPro.TMP_Text h2oGasPressureText, h2oLiquidPressureText, suitPressureText, fanRateText;
-    private TMPro.TMP_Text EEPressure, EETemperature, batteryTimeText, batteryCapacityText;
+    private GameObject eva;
+    private EVAController evaController;
 
     private GameObject egress;
     private NewEgressController egressController;
@@ -35,28 +32,11 @@ public class TSSAgent : MonoBehaviour
     private GameObject connectMsg;
 
     // Start is called before the first frame update
-    private void Awake()
+    void Awake()
     {
         markerController = GameObject.Find("Markers").GetComponent<MarkerController>();
-        EVA = GameObject.Find("EVA");
-        timerText = GameObject.Find("Timer").GetComponent<TMPro.TMP_Text>();
-        heartRateText = GameObject.Find("Bpm").GetComponent<TMPro.TMP_Text>();
-        POPressureText = GameObject.Find("Primary Oxygen Pressure").GetComponent<TMPro.TMP_Text>();
-        PORateText = GameObject.Find("Primary Oxygen Rate").GetComponent<TMPro.TMP_Text>();
-        POTimeText = GameObject.Find("Primary Oxygen Time").GetComponent<TMPro.TMP_Text>();
-        POPrecentText = GameObject.Find("Primary Oxygen Percent").GetComponent<TMPro.TMP_Text>();
-        SOPessureText = GameObject.Find("Secondary Oxygen Pressure").GetComponent<TMPro.TMP_Text>();
-        SORateText = GameObject.Find("Secondary Oxygen Rate").GetComponent<TMPro.TMP_Text>();
-        SOTimeText = GameObject.Find("Secondary Oxygen Time").GetComponent<TMPro.TMP_Text>();
-        SOPercentText = GameObject.Find("Secondary Oxygen Percent").GetComponent<TMPro.TMP_Text>();
-        h2oGasPressureText = GameObject.Find("H2O Gas Pressure").GetComponent<TMPro.TMP_Text>();
-        h2oLiquidPressureText = GameObject.Find("H2O Liquid Pressure").GetComponent<TMPro.TMP_Text>();
-        suitPressureText = GameObject.Find("Suit Pressure").GetComponent<TMPro.TMP_Text>();
-        fanRateText = GameObject.Find("Fan Rate").GetComponent<TMPro.TMP_Text>();
-        EEPressure = GameObject.Find("External Environment Pressure").GetComponent<TMPro.TMP_Text>();
-        EETemperature = GameObject.Find("External Environment Temperature").GetComponent<TMPro.TMP_Text>();
-        batteryTimeText = GameObject.Find("Battery Time").GetComponent<TMPro.TMP_Text>();
-        batteryCapacityText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
+        eva = GameObject.Find("EVA");
+        evaController = eva.GetComponent<EVAController>();
         connectMsg = GameObject.Find("Connecting");
         egress = GameObject.Find("New Egress");
         egressController = egress.GetComponent<NewEgressController>();
@@ -68,7 +48,7 @@ public class TSSAgent : MonoBehaviour
         tss = new TSSConnection();
         connectMsg.SetActive(false);
         egress.SetActive(false);
-        EVA.SetActive(false);
+        eva.SetActive(false);
     }
 
     // Update is called once per frame
@@ -112,7 +92,7 @@ public class TSSAgent : MonoBehaviour
 
             if (telemMsg.simulationStates.battery_capacity != 0)
             {
-                UpdateEVA(telemMsg.simulationStates);
+                evaController.EVAMsgUpdateCallback(telemMsg.simulationStates);
             }
 
             var uia = telemMsg.uiaMsg;
@@ -160,51 +140,16 @@ public class TSSAgent : MonoBehaviour
 
     }
 
-    // An example handler for the OnTSSMsgReceived event which just serializes to JSON and prints it all out
-    // Can be any function that returns void and has a single parameter of type TSS.Msgs.TSSMsg
-    public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg)
-    {
-        Debug.Log("Received the following telemetry data from the TSS:\n" + JsonUtility.ToJson(tssMsg, prettyPrint: true));
-    }
-
     public void SendRoverMoveCommand(Vector2 loc)
     {
         Debug.Log("Send rover to " + loc);
         tss.SendRoverNavigateCommand(loc.x, loc.y);
     }
 
-    private void UpdateEVA(SimulationStates eva)
+    // An example handler for the OnTSSMsgReceived event which just serializes to JSON and prints it all out
+    // Can be any function that returns void and has a single parameter of type TSS.Msgs.TSSMsg
+    public static void PrintInfo(TSS.Msgs.TSSMsg tssMsg)
     {
-        if (!EVA.activeSelf) return;
-
-        timerText.text = string.Format("{00:00:00}", eva.timer);
-
-        heartRateText.text = eva.heart_rate.ToString("###bpm");
-
-        POPressureText.text = eva.o2_pressure.ToString("###%");
-        PORateText.text = eva.o2_rate.ToString("###%");
-        POTimeText.text = string.Format("{00:00:00}", eva.oxygen_primary_time);
-        POPrecentText.text = eva.primary_oxygen.ToString("###%");
-
-        SOPessureText.text = eva.sop_pressure.ToString("###psia");
-        SORateText.text = eva.sop_rate.ToString("#.#psi/min");
-        SOTimeText.text = string.Format("{00:00:00}", eva.oxygen_secondary_time);
-        SOPercentText.text = eva.secondary_oxygen.ToString("###%");
-
-        h2oGasPressureText.text = eva.h2o_gas_pressure.ToString("###psia");
-
-        h2oLiquidPressureText.text = eva.h2o_liquid_pressure.ToString("###psia");
-
-        suitPressureText.text = eva.suit_pressure.ToString("#psid");
-
-        string v_fan_str = eva.fan_tachometer.ToString("0F");
-        fanRateText.text = v_fan_str.Insert(v_fan_str.Length - 3, ",");
-
-        EEPressure.text = eva.sub_pressure.ToString("#psia");
-        EETemperature.text = eva.temperature.ToString("##F");
-
-        batteryTimeText.text = string.Format("{00:00:00}", eva.battery_time_left);
-        batteryCapacityText.text = eva.battery_capacity.ToString("##amp-hr");
-
+        Debug.Log("Received the following telemetry data from the TSS:\n" + JsonUtility.ToJson(tssMsg, prettyPrint: true));
     }
 }
