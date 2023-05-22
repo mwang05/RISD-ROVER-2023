@@ -173,6 +173,7 @@ public class NewEgressController : MonoBehaviour
     private GameObject currLoadingIcon;
 
     private GameObject nav;
+    // private GameObject proceed;
     private MapController mapControllerScript;
     private GameObject[] normalTextObjs;
     private TMPro.TMP_Text[] normalTexts;
@@ -211,6 +212,7 @@ public class NewEgressController : MonoBehaviour
         heading = GameObject.Find("Heading Text").GetComponent<TMPro.TMP_Text>();
         stage = GameObject.Find("Procedure Stage").GetComponent<TMPro.TMP_Text>();
         panelRT = GameObject.Find("List Back Plate").GetComponent<RectTransform>();
+        // proceed = GameObject.Find("Proceed Button");
 
         for (int i = 0; i < 6; i++)
         {
