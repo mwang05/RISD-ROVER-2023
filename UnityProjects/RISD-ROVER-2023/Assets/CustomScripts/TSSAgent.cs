@@ -35,6 +35,7 @@ public class TSSAgent : MonoBehaviour
     private SimulationStates prevSimStates = new SimulationStates();
     private UIAMsg prevUIAMsg = new UIAMsg();
     private UIAState prevUIAState = new UIAState();
+    private SpecMsg prevSpecMsg = new SpecMsg();
 
     // Start is called before the first frame update
     void Awake()
@@ -113,11 +114,12 @@ public class TSSAgent : MonoBehaviour
             }
 
             // Spec
-
             if (telemMsg.specMsg.CaO != 0)
             {
                 Debug.Log(telemMsg.specMsg.CaO);
             }
+
+            
         };
 
         // tss.OnOpen, OnError, and OnClose events just re-raise events from websockets.
