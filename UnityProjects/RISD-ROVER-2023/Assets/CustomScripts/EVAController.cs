@@ -5,6 +5,7 @@ using TSS.Msgs;
 
 public class EVAController : MonoBehaviour
 {
+    private GameObject EVA;
     private TMPro.TMP_Text timerText, heartRateText, POPressureText, PORateText, POTimeText, POPrecentText;
     private TMPro.TMP_Text SOPessureText, SORateText, SOTimeText, SOPercentText;
     private TMPro.TMP_Text h2oGasPressureText, h2oLiquidPressureText, suitPressureText, fanRateText;
@@ -12,6 +13,7 @@ public class EVAController : MonoBehaviour
 
     void Awake()
     {
+        EVA = GameObject.Find("EVA");
         timerText = GameObject.Find("Timer").GetComponent<TMPro.TMP_Text>();
         heartRateText = GameObject.Find("Bpm").GetComponent<TMPro.TMP_Text>();
         POPressureText = GameObject.Find("Primary Oxygen Pressure").GetComponent<TMPro.TMP_Text>();
@@ -30,7 +32,11 @@ public class EVAController : MonoBehaviour
         EETemperature = GameObject.Find("External Environment Temperature").GetComponent<TMPro.TMP_Text>();
         batteryTimeText = GameObject.Find("Battery Time").GetComponent<TMPro.TMP_Text>();
         batteryCapacityText = GameObject.Find("Battery Capacity").GetComponent<TMPro.TMP_Text>();
+    }
 
+    void Start()
+    {
+        EVA.SetActive(false);
     }
 
     public void EVAMsgUpdateCallback(SimulationStates eva)

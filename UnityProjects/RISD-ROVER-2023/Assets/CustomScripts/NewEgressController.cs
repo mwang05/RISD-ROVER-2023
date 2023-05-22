@@ -204,11 +204,11 @@ public class NewEgressController : MonoBehaviour
         greenTexts = new TMPro.TMP_Text[6];
         completeIcons = new GameObject[6];
         loadingIcons = new GameObject[6];
-        whiteDots = new GameObject[10];
-        emptyDots = new GameObject[10];
-        greenDots = new GameObject[10];
-        whiteLines = new GameObject[9];
-        greenLines = new GameObject[9];
+        whiteDots = new GameObject[11];
+        emptyDots = new GameObject[11];
+        greenDots = new GameObject[11];
+        whiteLines = new GameObject[10];
+        greenLines = new GameObject[10];
         heading = GameObject.Find("Heading Text").GetComponent<TMPro.TMP_Text>();
         stage = GameObject.Find("Procedure Stage").GetComponent<TMPro.TMP_Text>();
         panelRT = GameObject.Find("List Back Plate").GetComponent<RectTransform>();
@@ -224,12 +224,12 @@ public class NewEgressController : MonoBehaviour
             loadingIcons[i] = GameObject.Find("Loading " + (i + 1));
         }
         
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 11; i++)
         {
             whiteDots[i] = GameObject.Find("White Dot " + (i + 1).ToString());
             emptyDots[i] = GameObject.Find("Empty Dot " + (i + 1).ToString());
             greenDots[i] = GameObject.Find("Green Dot " + (i + 1).ToString());
-            if (i < 9)
+            if (i < 10)
             {
                 whiteLines[i] = GameObject.Find("White Line " + (i + 1).ToString());
                 greenLines[i] = GameObject.Find("Green Line " + (i + 1).ToString());
@@ -313,7 +313,7 @@ public class NewEgressController : MonoBehaviour
             whiteDots[i].SetActive(false);
             greenDots[i].SetActive(false);
 
-            if (i < 9)
+            if (i < 10)
             {
                 whiteLines[i].SetActive(false);
                 greenLines[i].SetActive(false);
