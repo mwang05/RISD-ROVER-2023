@@ -39,15 +39,15 @@ public class EVAController : MonoBehaviour
 
         heartRateText.text = eva.heart_rate.ToString("###bpm");
 
-        POPressureText.text = eva.o2_pressure.ToString("###%");
-        PORateText.text = eva.o2_rate.ToString("###%");
+        POPressureText.text = eva.o2_pressure.ToString(".%");
+        PORateText.text = (eva.o2_rate/100).ToString("###%");
         POTimeText.text = string.Format("{00:00:00}", eva.oxygen_primary_time);
-        POPrecentText.text = eva.primary_oxygen.ToString("###%");
+        POPrecentText.text = (eva.primary_oxygen/100).ToString("###%");
 
         SOPessureText.text = eva.sop_pressure.ToString("###psia");
         SORateText.text = eva.sop_rate.ToString("#.#psi/min");
         SOTimeText.text = string.Format("{00:00:00}", eva.oxygen_secondary_time);
-        SOPercentText.text = eva.secondary_oxygen.ToString("###%");
+        SOPercentText.text = (eva.secondary_oxygen/100).ToString("###%");
 
         h2oGasPressureText.text = eva.h2o_gas_pressure.ToString("###psia");
 
@@ -59,7 +59,7 @@ public class EVAController : MonoBehaviour
         fanRateText.text = v_fan_str.Insert(v_fan_str.Length - 3, ",");
 
         EEPressure.text = eva.sub_pressure.ToString("#psia");
-        EETemperature.text = eva.temperature.ToString("##F");
+        EETemperature.text = eva.temperature.ToString("##.#F");
 
         batteryTimeText.text = string.Format("{00:00:00}", eva.battery_time_left);
         batteryCapacityText.text = eva.battery_capacity.ToString("##amp-hr");

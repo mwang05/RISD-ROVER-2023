@@ -7,23 +7,161 @@ using TSS.Msgs;
 public class NewEgressController : MonoBehaviour
 {
     private string[] taskHeadings = {
-        "Power on EMU-1",
+        //step 1
+        "Power on EMU-1", 
+        //step 2
+        "Prepare UIA",
+        //step 3
+        "Purge N2",
+        //step 4
+        "Initial O2 Pressurization",
+        //step 5 - 1
+        "Dump waste water", 
+        //step 5 - 2
+        "Refill EMU Water",
+        //step 7
+        "Complete EMU Pressurization",
+        //step 8
+        "Complete Airlock Depressurization",
+        //step 9
+        "UIA Procedures are complete, exit the airlock",
     };
 
     private List<string>[] taskSteps = {
         new List<string> {
+            //step 1
             "Switch EMU-1 Power to ON",
-            "When the SUIT is booted (emu1_is_booted), proceed"
+            "When the SUIT is booted (emu1_is_booted), proceed",
+            //step 2
+            "Switch O2 Vent to OPEN",
+            "When UIA Supply Pressure (uia_ < 23 psi, proceed)",
+            "Switch O2 Vent to CLOSE",
+            //step 3
+            "Switch O2 Supply to OPEN",
+            "When UIA Supply Pressure is > 3000 psi, proceed",
+            "Switch O2 Supply to CLOSE",
+           
+            "Switch O2 Vent to OPEN",
+            "When UIA Supply Pressure is < 23 psi, proceed",
+            "Switch O2 Vent to CLOSE",
+            //step 4
+            "Switch O2 Supply to OPEN",
+            "When UIA Supply Pressure is > 1500 psi, proceed",
+            "Switch O2 Supply to CLOSE",
+            //step 5-1
+            "Dump waste water",
+            "Switch EV-1 Waste to OPEN",
+            "When water level if < 5%, proceed",
+            "Switch EV-1 Waste to CLOSE",
+            //step 5-2
+            "Refill EMU Water",
+            "Switch EV-1 Supply to OPEN",
+            "When water level if < 5%, proceed",
+            "Switch EV-1 Waste to CLOSE",
+            //step 6
+            "Switch Depress Pump to ON",
+            "IF the pump faults:",
+            "Switch the Depress Pump to OFF",
+            "When the fault goes away, proceed",
+            "Switch the Depress Pump to ON",
+            "When airlock pressure is < 10.2 psi, switch to OFF proceed",
+            //step 7
+            "Switch O2 Supply to OPEN",
+            "When UIA Supply Pressure > 3000 psi, proceed",
+            "Switch O2 Supply to CLOSE",
+            //step 8
+            "Switch Depress Pump to ON",
+            "When airlock pressure is < 0.1 psi, proceed",
+            "Switch Depress Pump to OFF",
+            
         },
     };
 
     private Func<int, bool>[] taskExecutions = {
-        // Power on EMU-1
+        //step 1 Power on EMU-1
         step => step switch {
             0 => uiaMsg.emu1_pwr_switch,
             1 => uiaState.emu1_is_booted,
             _ => false, // default case
         },
+
+        // step 2 Prepare UIA
+        step => step switch {
+            0 => uiaMsg.o2_vent_switch,
+            1 => uiaState.uia_supply_pressure < 23,
+            2 => uiaMsg.o2_vent_switch,
+            _ => false, // default case
+        },
+
+        // step 3 Purge N2
+        step => step switch {
+            0 => uiaMsg.emu1_o2_supply_switch,
+            1 => uiaState.uia_supply_pressure > 3000,
+            2 => uiaMsg.emu1_o2_supply_switch,
+            3 => uiaMsg.o2_vent_switch,
+            4 => uiaState.uia_supply_pressure < 23,
+            5 => uiaMsg.o2_vent_switch,
+            _ => false, // default case
+        },
+
+        // step 4 Initial O2 Pressurization
+        step => step switch {
+            0 => uiaMsg.emu1_o2_supply_switch,
+            1 => uiaState.uia_supply_pressure < 1500,
+            2 => uiaMsg.emu1_o2_supply_switch,
+            _ => false, // default case
+        },
+
+        // step 5 -1 Dump waste water
+        step => step switch {
+            0 => uiaMsg.emu1_water_waste,
+            1 => uiaState.water_level < 5,
+            2 => uiaMsg.emu1_water_waste,
+            _ => false, // default case
+        },
+
+        // step 5 - 2 Refill EMU Water
+        step => step switch {
+            0 => uiaMsg.ev1_supply_switch,
+            1 => uiaState.water_level > 95,
+            2 => uiaMsg.ev1_supply_switch,
+            _ => false, // default case
+        },
+
+        // step 6 Depressurize Airlock to 10.2 psi
+        step => step switch {
+            0 => uiaMsg.depress_pump_switch,
+            1 => uiaState.depress_pump_fault,
+            2 => uiaMsg.depress_pump_switch,
+            3 => uiaState.depress_pump_fault,
+            4 => uiaMsg.depress_pump_switch,
+            5 => uiaState.airlock_pressure < 10.2,
+            _ => false, // default case
+        },
+
+        // step 7 Complete EMU Pressurization
+        step => step switch {
+            0 => uiaMsg.emu1_o2_supply_switch,
+            1 => uiaState.uia_supply_pressure > 3000,
+            2 => uiaMsg.emu1_o2_supply_switch,
+            _ => false, // default case
+        },
+
+        // step 8 Complete Airlock Depressurization
+        step => step switch {
+            0 => uiaMsg.depress_pump_switch,
+            1 => uiaState.airlock_pressure < 0.1,
+            2 => uiaMsg.depress_pump_switch,
+            _ => false, // default case
+        },
+
+        // UIA Procedures are complete, exit the airlock
+        step => step switch {
+            0 => uiaMsg.emu1_pwr_switch,
+            1 => uiaState.emu1_is_booted,
+            _ => false, // default case
+        },
+
     };
 
     private static UIAMsg uiaMsg;
@@ -167,7 +305,7 @@ public class NewEgressController : MonoBehaviour
     void SetupPanel()
     {
         // Reset Procedure to the default state
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 11; i++)
         {
             emptyDots[i].SetActive(false);
             whiteDots[i].SetActive(false);
@@ -181,7 +319,7 @@ public class NewEgressController : MonoBehaviour
         }
 
         // Setup Procedure
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 11; i++)
         {
             if (i < currTask)
             {
@@ -198,7 +336,7 @@ public class NewEgressController : MonoBehaviour
 
         // Setup Title
         heading.text = taskHeadings[currTask];
-        stage.text = "Procedure " + (currTask + 1).ToString() + " of 10";
+        stage.text = "Procedure " + (currTask + 1).ToString() + " of 11";
 
         // Setup List
         for (int i = 0; i < 6; i++)
