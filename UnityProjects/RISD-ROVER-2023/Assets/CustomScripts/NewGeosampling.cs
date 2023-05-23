@@ -12,12 +12,11 @@ public class NewGeosampling : MonoBehaviour
         public string RockType;
         public string Petrology;
 
-        public SampleMetadata(int sampleNum, int missionNum, string rockType, string petrology)
+        public SampleMetadata(int sampleNum, int missionNum, string rockType)
         {
             SampleNum = sampleNum;
             MissionNum = missionNum;
             RockType = rockType;
-            Petrology = petrology;
         }
     };
 
@@ -55,12 +54,26 @@ public class NewGeosampling : MonoBehaviour
     private TMPro.TMP_Text SiO2_Text, TiO2_Text, Al2O3_Text, FeO_Text, MnO_Text, MgO_Text, CaO_Text, K2O_Text, P2O3_Text;
 
     private SampleMetadata[] sampleMetadatas = {
-        new SampleMetadata(70215, 17, "Mare basalt", "Fine-grained, porphyritic"),
+        new SampleMetadata(70215312, 17, "Mare basalt"),
+        new SampleMetadata(1555611, 15, " Vesicular basalt"), 
+        new SampleMetadata(12002492, 12, " Olivine basalt"),
+        new SampleMetadata(14310220, 14, " Feldspathic basalt"),
+        new SampleMetadata(1205226, 12, "Pigeonite basalt"),
+        new SampleMetadata(1555562, 15, "Olivine basalt"),
+        new SampleMetadata(1001730, 11, "Ilmenite basalt"),
     };
 
     private SampleSpec[] sampleSpecs = {
         new SampleSpec(40.58f, 12.83f, 10.91f, 13.18f, 0.19f, 6.7f, 10.64f, -0.11f, 0.34f),
+        new SampleSpec(36.89f, 2.44f, 9.6f, 14.52f, 0.24f, 5.3f, 8.22f, -0.13f, 0.29f),
+        new SampleSpec(41.62f, 2.44f, 9.52f, 18.12f, 0.27f, 11.1f, 8.12f, -0.12f, 0.28f),
+        new SampleSpec(46.72f, 1.1f, 19.01f, 7.21f, 0.14f, 7.83f, 14.22f, 0.43f, 0.65f),
+        new SampleSpec(46.53f, 3.4f, 11.68f, 16.56f, 0.24f, 6.98f, 11.11f, -0.02f, 0.38f),
+        new SampleSpec(42.45f, 1.56f, 11.44f, 17.91f, 0.27f, 10.45f, 9.37f, -0.08f, 0.34f),
+        new SampleSpec(42.56f, 9.38f, 12.03f, 11.27f, 0.17f, 9.7f, 10.52f, 0.28f, 0.44f),
     };
+
+    
 
     void Awake()
     {
