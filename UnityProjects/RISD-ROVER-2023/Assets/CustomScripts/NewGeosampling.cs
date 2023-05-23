@@ -155,37 +155,37 @@ public class NewGeosampling : MonoBehaviour
         prevButton = GameObject.Find("Geo Previous Button");
     }
 
-    float startTime;
-    bool t1;
-    bool t2;
-    bool t3;
+    // float startTime;
+    // bool t1;
+    // bool t2;
+    // bool t3;
 
-    void FixedUpdate()
-    {
-        if (!t1 & Time.time - startTime > 1) {
-            t1 = true;
-            SpecMsgUpdateCallback(new SpecMsg());
-        }
-        if (!t2 & Time.time - startTime > 6) {
-            t2 = true;
-            SpecMsg msg = new SpecMsg();
-            msg.SiO2 = 40.58f;
-            msg.TiO2 = 12.83f;
-            msg.Al2O3 = 10.91f;
-            msg.FeO = 13.18f;
-            msg.MnO = 0.19f;
-            msg.MgO = 6.7f;
-            msg.CaO = 10.64f;
-            msg.K2O = -0.11f;
-            msg.P2O3 = 0.34f;
+    // void FixedUpdate()
+    // {
+    //     if (!t1 & Time.time - startTime > 1) {
+    //         t1 = true;
+    //         SpecMsgUpdateCallback(new SpecMsg());
+    //     }
+    //     if (!t2 & Time.time - startTime > 6) {
+    //         t2 = true;
+    //         SpecMsg msg = new SpecMsg();
+    //         msg.SiO2 = 40.58f;
+    //         msg.TiO2 = 12.83f;
+    //         msg.Al2O3 = 10.91f;
+    //         msg.FeO = 13.18f;
+    //         msg.MnO = 0.19f;
+    //         msg.MgO = 6.7f;
+    //         msg.CaO = 10.64f;
+    //         msg.K2O = -0.11f;
+    //         msg.P2O3 = 0.34f;
             
-            SpecMsgUpdateCallback(msg);
-        }
-        if (!t3 & Time.time - startTime > 15) {
-            t3 = true;
-            SpecMsgUpdateCallback(new SpecMsg());
-        }
-    }
+    //         SpecMsgUpdateCallback(msg);
+    //     }
+    //     if (!t3 & Time.time - startTime > 15) {
+    //         t3 = true;
+    //         SpecMsgUpdateCallback(new SpecMsg());
+    //     }
+    // }
 
     // Start is called before the first frame update
     void Start()
