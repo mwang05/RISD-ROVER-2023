@@ -32,10 +32,16 @@ public class NewEgressController : MonoBehaviour
             //step 1
             "Switch EMU-1 Power to ON",
             "When the SUIT is booted (emu1_is_booted), proceed",
+            },
+
+        new List<string> {
             //step 2
             "Switch O2 Vent to OPEN",
             "When UIA Supply Pressure (uia_ < 23 psi, proceed)",
             "Switch O2 Vent to CLOSE",
+            },
+
+        new List<string> {
             //step 3
             "Switch O2 Supply to OPEN",
             "When UIA Supply Pressure is > 3000 psi, proceed",
@@ -44,20 +50,32 @@ public class NewEgressController : MonoBehaviour
             "Switch O2 Vent to OPEN",
             "When UIA Supply Pressure is < 23 psi, proceed",
             "Switch O2 Vent to CLOSE",
+            },
+        
+        new List<string> {
             //step 4
             "Switch O2 Supply to OPEN",
             "When UIA Supply Pressure is > 1500 psi, proceed",
             "Switch O2 Supply to CLOSE",
+            },
+
+        new List<string> {
             //step 5-1
             "Dump waste water",
             "Switch EV-1 Waste to OPEN",
             "When water level if < 5%, proceed",
             "Switch EV-1 Waste to CLOSE",
+            },
+
+        new List<string> {
             //step 5-2
             "Refill EMU Water",
             "Switch EV-1 Supply to OPEN",
             "When water level if < 5%, proceed",
             "Switch EV-1 Waste to CLOSE",
+            },
+
+        new List<string> {
             //step 6
             "Switch Depress Pump to ON",
             "IF the pump faults:",
@@ -65,16 +83,21 @@ public class NewEgressController : MonoBehaviour
             "When the fault goes away, proceed",
             "Switch the Depress Pump to ON",
             "When airlock pressure is < 10.2 psi, switch to OFF proceed",
+            },
+
+        new List<string> {
             //step 7
             "Switch O2 Supply to OPEN",
             "When UIA Supply Pressure > 3000 psi, proceed",
             "Switch O2 Supply to CLOSE",
+            },
+
+        new List<string> {
             //step 8
             "Switch Depress Pump to ON",
             "When airlock pressure is < 0.1 psi, proceed",
             "Switch Depress Pump to OFF",
-            
-        },
+            },
     };
 
     private Func<int, bool>[] taskExecutions = {
