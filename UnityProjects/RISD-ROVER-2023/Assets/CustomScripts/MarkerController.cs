@@ -103,6 +103,7 @@ public class MarkerController : MonoBehaviour
 	private static TSSAgent tssAgent;
 	private static GameObject coord;
 	private static TMPro.TMP_Text coordText;
+    private NotificationController notificationController;
 
     private static Dictionary<MarkerType, GameObject> prefabDict;
     private Dictionary<MarkerType, bool> showMarker;
@@ -142,7 +143,8 @@ public class MarkerController : MonoBehaviour
     {
         mainCamera = Camera.main;
         gps = GameObject.Find("GPS").GetComponent<GPS>();
-		// tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
+		tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
+        notificationController = GameObject.Find("Notifications").GetComponent<NotificationController>();
 		coord = GameObject.Find("Coordinate");
 		coordText = coord.GetComponent<TMPro.TMP_Text>();
         mapRT = GameObject.Find("Map").GetComponent<RectTransform>();
@@ -208,7 +210,7 @@ public class MarkerController : MonoBehaviour
             markers.Add(curr.MapMarkerObj, curr);
         }
 
-        // tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
+        tssAgent = GameObject.Find("TSSAgent").GetComponent<TSSAgent>();
     }
 
     public void SetRoverLocation(Vector2 loc)
@@ -395,6 +397,7 @@ public class MarkerController : MonoBehaviour
 
 	public void OnRoverMarkerConfirmPressed()
 	{
+        notificationController.PushSystemMessage("Moved rover to the selected POI", 3);
 		tssAgent.SendRoverMoveCommand(currMarker.GpsCoord);
 		roverButtons.SetActive(false);
 	}
@@ -405,6 +408,12 @@ public class MarkerController : MonoBehaviour
 		currMarker.SetOpacity(0.3f);
         coord.SetActive(false);
 	}
+
+    public void OnRoverRecallPressed()
+    {
+        notificationController.PushSystemMessage("Recall rover to user's location", 3);
+        tssAgent.SendRoverRecallCommand();
+    }
 
     private void SelectNewMarkerType(MarkerType type)
     {

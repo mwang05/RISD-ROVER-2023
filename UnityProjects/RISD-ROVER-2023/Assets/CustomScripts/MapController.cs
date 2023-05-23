@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
-// using Microsoft.MixedReality.Toolkit.UX;
 using Microsoft.MixedReality.Toolkit;
-// using System;
-// using UnityEngine.Serialization;
-// using UnityEngine.UI;
 using RectTransform = UnityEngine.RectTransform;
 
 public class MapController : MRTKBaseInteractable

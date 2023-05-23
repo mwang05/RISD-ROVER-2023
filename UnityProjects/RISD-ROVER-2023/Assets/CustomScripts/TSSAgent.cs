@@ -30,6 +30,9 @@ public class TSSAgent : MonoBehaviour
     private GPS gps;
     private bool firstConnect;
 
+    private GameObject geoSampling;
+    private NewGeosampling geoSamplingController;
+
     private GPSMsg prevGPSMsg = new GPSMsg();
     private RoverMsg prevRoverMsg = new RoverMsg();
     private SimulationStates prevSimStates = new SimulationStates();
@@ -47,6 +50,8 @@ public class TSSAgent : MonoBehaviour
         evaController = eva.GetComponent<EVAController>();
         egress = GameObject.Find("New Egress");
         egressController = egress.GetComponent<NewEgressController>();
+        geoSampling = GameObject.Find("GeoSampling");
+        geoSamplingController = geoSampling.GetComponent<NewGeosampling>();
         gps = GameObject.Find("GPS").GetComponent<GPS>();
     }
 
@@ -54,6 +59,7 @@ public class TSSAgent : MonoBehaviour
     {
         tss = new TSSConnection();
         mainPanel.SetActive(false);
+        geoSampling.SetActive(false);
         egress.SetActive(false);
         eva.SetActive(false);
     }
@@ -103,23 +109,30 @@ public class TSSAgent : MonoBehaviour
 
             if (IsValidUIAMsg(telemMsg.uiaMsg))
             {
-                egressController.UIAMsgUpdateCallback(telemMsg.uiaMsg);
-                prevUIAMsg = telemMsg.uiaMsg;
+                if (egress.activeSelf)
+                {
+                    egressController.UIAMsgUpdateCallback(telemMsg.uiaMsg);
+                    prevUIAMsg = telemMsg.uiaMsg;
+                }
             }
 
             if (IsValidUIAState(telemMsg.uiaState))
             {
-                egressController.UIAStateUpdateCallback(telemMsg.uiaState);
-                prevUIAState = telemMsg.uiaState;
+                if (egress.activeSelf)
+                {
+                    egressController.UIAStateUpdateCallback(telemMsg.uiaState);
+                    prevUIAState = telemMsg.uiaState;
+                }
             }
 
-            // Spec
-            if (telemMsg.specMsg.CaO != 0)
+            if (IsValidSpecMsg(telemMsg.specMsg))
             {
-                Debug.Log(telemMsg.specMsg.CaO);
+                if (geoSampling.activeSelf)
+                {
+                    geoSamplingController.SpecMsgUpdateCallback(telemMsg.specMsg);
+                    prevSpecMsg = telemMsg.specMsg;
+                }
             }
-
-            
         };
 
         // tss.OnOpen, OnError, and OnClose events just re-raise events from websockets.
@@ -191,13 +204,28 @@ public class TSSAgent : MonoBehaviour
         );
     }
 
+    public bool IsValidSpecMsg(SpecMsg msg)
+    {
+        return !(
+            msg.SiO2 == prevSpecMsg.SiO2 &&
+            msg.TiO2 == prevSpecMsg.TiO2 &&
+            msg.Al2O3 == prevSpecMsg.Al2O3 &&
+            msg.FeO == prevSpecMsg.FeO &&
+            msg.MnO == prevSpecMsg.MnO &&
+            msg.MgO == prevSpecMsg.MgO &&
+            msg.CaO == prevSpecMsg.CaO &&
+            msg.K2O == prevSpecMsg.K2O &&
+            msg.P2O3 == prevSpecMsg.P2O3
+        );
+    }
+
     public void SendRoverMoveCommand(Vector2 loc)
     {
         Debug.Log("Send rover to " + loc);
         tss.SendRoverNavigateCommand(loc.x, loc.y);
     }
 
-    public void RoverRecallCommand()
+    public void SendRoverRecallCommand()
     {
         Debug.Log("Recall rover to the user's location");
         tss.SendRoverRecallCommand();

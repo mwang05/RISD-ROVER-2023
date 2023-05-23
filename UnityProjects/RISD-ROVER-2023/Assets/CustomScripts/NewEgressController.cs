@@ -283,23 +283,7 @@ public class NewEgressController : MonoBehaviour
         // Current task complete, move on
         if (currTask < taskSteps.Length && currStep >= taskSteps[currTask].Count)
         {
-            Debug.Log("Completed " + currTask);
-            currTask++;
-            currStep = 0;
-
-            // Check if we are done with all tasks
-            if (currTask >= taskSteps.Length) 
-            {
-                Debug.Log("Done");
-                gameObject.SetActive(false);
-                nav.SetActive(true);
-                mapControllerScript.RecordStartTime();
-            }
-            else
-            {
-                Debug.Log("Move on to " + currTask);
-                SetupPanel();
-            }
+            CompleteCurrentTask();
         }
 
         if (TaskInProgress())
@@ -325,6 +309,27 @@ public class NewEgressController : MonoBehaviour
     private bool TaskInProgress()
     {
         return currTask < taskSteps.Length && currStep < taskSteps[currTask].Count;
+    }
+
+    public void CompleteCurrentTask()
+    {
+        Debug.Log("Completed " + currTask);
+        currTask++;
+        currStep = 0;
+
+        // Check if we are done with all tasks
+        if (currTask >= taskSteps.Length) 
+        {
+            Debug.Log("Done");
+            gameObject.SetActive(false);
+            nav.SetActive(true);
+            mapControllerScript.RecordStartTime();
+        }
+        else
+        {
+            Debug.Log("Move on to " + currTask);
+            SetupPanel();
+        }
     }
 
     void SetupPanel()

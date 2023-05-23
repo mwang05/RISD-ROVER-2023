@@ -11,10 +11,14 @@ public class NotificationController : MonoBehaviour
     private GameObject errorWarning;
     private TMPro.TMP_Text errorWarningText;
 
+    private GameObject geoLoadingCompleteMsg;
+
     private float msgStartTime;
     private float errorStartTime;
     private float msgDuration;
     private float errorDuration;
+    private float geoStartTime;
+    private float geoDuration;
 
     void Awake()
     {
@@ -23,6 +27,8 @@ public class NotificationController : MonoBehaviour
 
         errorWarning = GameObject.Find("Error Warning");
         errorWarningText = GameObject.Find("Error Text").GetComponent<TMPro.TMP_Text>();
+
+        geoLoadingCompleteMsg = GameObject.Find("Geo Loading Complete");
     }
 
     // Start is called before the first frame update
@@ -30,6 +36,7 @@ public class NotificationController : MonoBehaviour
     {
         systemMsg.SetActive(false);
         errorWarning.SetActive(false);
+        geoLoadingCompleteMsg.SetActive(false);
     }
 
     // Update is called once per frame
@@ -52,6 +59,15 @@ public class NotificationController : MonoBehaviour
                 HideErrorWarning();
             }
         }
+        
+        if (geoLoadingCompleteMsg.activeSelf)
+        {
+            float delta = Time.time - geoStartTime;
+            if (delta >= geoDuration)
+            {
+                HideGeoComplete();
+            }
+        }
     }
 
     public void PushSystemMessage(string msg, float duration)
@@ -70,6 +86,13 @@ public class NotificationController : MonoBehaviour
         errorWarning.SetActive(true);
     }
 
+    public void PushGeoComplete(float duration)
+    {
+        geoStartTime = Time.time;
+        geoDuration = duration;
+        geoLoadingCompleteMsg.SetActive(true);
+    }
+
     public void HideSystemMessage()
     {
         systemMsg.SetActive(false);
@@ -78,5 +101,10 @@ public class NotificationController : MonoBehaviour
     public void HideErrorWarning()
     {
         errorWarning.SetActive(false);
+    }
+
+    public void HideGeoComplete()
+    {
+        geoLoadingCompleteMsg.SetActive(false);
     }
 }
